@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v20 Final Fix</title>
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Nebula Chat</title>
+    
+    <!-- PWA Manifest (Data URI for single file portability) -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmVidWxhIENoYXQiLCJzaG9ydF9uYW1lIjoiTmVidWxhIiwiZGVzY3JpcHRpb24iOiJDaGF0IGRlIENsYXNlIFBybyIs" id="manifest-placeholder">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -18,6 +25,7 @@
             color: #e2e8f0;
             overflow: hidden;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .app-viewport {
@@ -43,8 +51,8 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Animations */
-        .fade-in { animation: fadeIn 0.2s ease-out; }
-        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        .pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .pulse-recording { animation: pulseRed 1.5s infinite; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -64,13 +72,13 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        /* Audio Player */
+        /* Audio Player Custom */
         .audio-player-container { display: flex; align-items: center; gap: 12px; min-width: 180px; padding: 4px 0; }
         .play-btn { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .play-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
-        .wave-bar { width: 3px; background: rgba(255,255,255,0.8); border-radius: 2px; animation: wave 1s infinite paused; }
-        .wave-bar.playing { animation-play-state: running; }
-        @keyframes wave { 0%, 100% { height: 10%; } 50% { height: 100%; } }
+        .wave-bar { width: 3px; background: rgba(255,255,255,0.6); border-radius: 2px; animation: wave 1s infinite paused; }
+        .wave-bar.playing { animation-play-state: running; background: #fff; }
+        @keyframes wave { 0%, 100% { height: 20%; } 50% { height: 100%; } }
         
         /* Status Bubble */
         .status-bubble {
@@ -110,6 +118,31 @@
 </head>
 <body>
 
+    <!-- INSTALL PWA MODAL -->
+    <div id="install-modal" class="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-6 fade-in">
+        <div class="w-full max-w-sm bg-slate-900 border border-emerald-500/50 rounded-3xl p-8 text-center relative overflow-hidden">
+            <button onclick="closeInstallModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-mobile-screen text-4xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">¡Instala Nebula! 📱</h2>
+            <p class="text-slate-400 mb-6 text-sm">Parece que usas mucho el chat. Instálalo para recibir notificaciones y entrar directo.</p>
+            
+            <div class="bg-slate-800/50 p-4 rounded-xl text-left mb-6 border border-slate-700">
+                <p class="text-xs text-emerald-400 font-bold mb-1">EN IPHONE (iOS):</p>
+                <p class="text-xs text-slate-300">Pulsa <i class="fa-solid fa-arrow-up-from-bracket"></i> Compartir y luego <strong>"Añadir a inicio"</strong>.</p>
+                <div class="h-2"></div>
+                <p class="text-xs text-emerald-400 font-bold mb-1">EN ANDROID:</p>
+                <p class="text-xs text-slate-300">Pulsa los 3 puntos y <strong>"Instalar aplicación"</strong>.</p>
+            </div>
+
+            <button onclick="enableNotifications()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all mb-2">
+                🔔 Activar Notificaciones
+            </button>
+            <button onclick="closeInstallModal()" class="text-slate-500 text-xs hover:text-white">Quizás luego</button>
+        </div>
+    </div>
+
     <!-- ONBOARDING (TUTORIAL) -->
     <div id="onboarding-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-6 fade-in">
         <div class="w-full max-w-md bg-slate-900 border border-emerald-500/50 rounded-3xl p-8 text-center relative overflow-hidden">
@@ -121,7 +154,7 @@
             <p class="text-slate-400 mb-8 text-sm">Todo lo que necesitas para sobrevivir al grupo:</p>
             <div class="grid grid-cols-2 gap-3 mb-8 text-left">
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-cloud text-cyan-400 mb-1"></i><h4 class="font-bold text-white text-sm">Cloud Photos</h4><p class="text-[10px] text-slate-400">Fotos HD en la nube.</p></div>
-                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-microphone text-emerald-400 mb-1"></i><h4 class="font-bold text-white text-sm">Audios</h4><p class="text-[10px] text-slate-400">Pulsa el micro.</p></div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-microphone text-emerald-400 mb-1"></i><h4 class="font-bold text-white text-sm">Audios</h4><p class="text-[10px] text-slate-400">Mantén el micro.</p></div>
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-paintbrush text-pink-400 mb-1"></i><h4 class="font-bold text-white text-sm">Pizarra</h4><p class="text-[10px] text-slate-400">Dibuja lo que sea.</p></div>
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-fire text-orange-400 mb-1"></i><h4 class="font-bold text-white text-sm">Secreto</h4><p class="text-[10px] text-slate-400">Mensajes de 1 uso.</p></div>
             </div>
@@ -328,14 +361,23 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        // --- CRITICAL CONSTANTS ---
         const APP_ID = "nebula_chat_v10"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
         const YYF_URL = 'https://yyf.mubilop.com';
 
-        // UI OBJECT - INITIALIZED SECURELY
+        // MANIFEST
+        const manifest = {
+            "name": "Nebula Chat",
+            "short_name": "Nebula",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#0f172a",
+            "theme_color": "#0f172a",
+            "icons": [{"src": "https://api.dicebear.com/7.x/bottts/svg?seed=nebula", "sizes": "192x192", "type": "image/svg+xml"}]
+        };
+        document.getElementById('manifest-placeholder').setAttribute('href', 'data:application/json;base64,' + btoa(JSON.stringify(manifest)));
+
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
             authForm: document.getElementById('auth-form'), authBtn: document.getElementById('auth-btn'), switchBtn: document.getElementById('auth-switch-btn'), errorMsg: document.getElementById('auth-error'),
@@ -347,7 +389,7 @@
             imageInput: document.getElementById('image-input'), drawModal: document.getElementById('draw-modal'), drawCanvas: document.getElementById('draw-canvas'), drawViewOnceHint: document.getElementById('draw-view-once-hint'),
             btnViewOnce: document.getElementById('btn-view-once'), viewOnceModal: document.getElementById('view-once-modal'), viewOnceContent: document.getElementById('view-once-content'),
             actionBtn: document.getElementById('action-btn'), actionIcon: document.getElementById('action-icon'), recordingOverlay: document.getElementById('recording-overlay'), recordTimer: document.getElementById('record-timer'),
-            onboardingModal: document.getElementById('onboarding-modal'),
+            onboardingModal: document.getElementById('onboarding-modal'), installModal: document.getElementById('install-modal'),
             groupModal: document.getElementById('group-modal'), groupNameInput: document.getElementById('group-name-input'),
             chatMenuDropdown: document.getElementById('chat-menu-dropdown'), btnAddMember: document.getElementById('btn-add-member'),
             addMemberModal: document.getElementById('add-member-modal'), addMemberSearch: document.getElementById('add-member-search'), addMemberResults: document.getElementById('add-member-results'),
@@ -357,13 +399,36 @@
 
         let currentUser = null, currentChatId = null, currentChatData = null; 
         let isRegistering = false, unsubscribeMessages = null, unsubscribeChats = null, unsubscribeMyProfile = null;
-        // --- MISSING VAR RESTORED HERE: ---
         let currentStatusBarUserIds = new Set(); 
         const userCache = {}; let myCurrentStatus = "";
         let isViewOnce = false, mediaRecorder = null, audioChunks = [], isRecording = false, recordStartTime = 0, recordInterval = null;
+        let msgCounter = 0;
+
+        // --- PWA & INSTALL ---
+        window.closeInstallModal = () => { ui.installModal.classList.add('hidden'); };
+        window.enableNotifications = async () => {
+            if ("Notification" in window) {
+                const per = await Notification.requestPermission();
+                if(per === 'granted') new Notification("¡Notificaciones activadas!", { body: "Te avisaremos cuando hablen en clase." });
+            }
+            closeInstallModal();
+        };
+        function checkInstallPrompt() {
+            // Logic to show install modal after 3 messages sent
+            let count = parseInt(localStorage.getItem('nebula_msg_count') || '0');
+            if(count === 3 && !localStorage.getItem('nebula_install_shown')) {
+                ui.installModal.classList.remove('hidden');
+                localStorage.setItem('nebula_install_shown', 'true');
+            }
+        }
+        function trackMessage() {
+            let count = parseInt(localStorage.getItem('nebula_msg_count') || '0');
+            count++; localStorage.setItem('nebula_msg_count', count.toString());
+            checkInstallPrompt();
+        }
 
         // --- GLOBAL HELPERS ---
-        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v19_intro_seen', 'true'); };
+        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v21_intro_seen', 'true'); }; // Changed key to force tutorial
         window.toggleStatusModal = () => { if(ui.statusModal) ui.statusModal.classList.toggle('hidden'); };
         window.setQuickPreset = (t) => { if(ui.statusInput) ui.statusInput.value = t; };
         window.saveMyStatus = async () => { if(ui.statusInput) { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); } };
@@ -502,9 +567,13 @@
                 mediaRecorder = new MediaRecorder(stream); audioChunks = [];
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = async () => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => { if(reader.result.length < 1200000) sendMessage(reader.result, 'audio'); else alert("Audio muy largo."); };
-                    reader.readAsDataURL(new Blob(audioChunks, { type: 'audio/webm' }));
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    ui.msgInput.placeholder = "Subiendo audio... 🎤";
+                    try {
+                        const url = await uploadToYYF(audioBlob, 'voice_message.webm');
+                        sendMessage(url, 'audio');
+                    } catch(e) { alert("Error subiendo audio"); }
+                    ui.msgInput.placeholder = "Escribe algo...";
                     stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRecorder.start(); isRecording = true; 
@@ -534,6 +603,7 @@
             let preview = content; if(isViewOnce) preview='🔥 Secreto'; else if(type==='image') preview='📷 Foto'; else if(type==='audio') preview='🎤 Audio';
             await updateDoc(doc(db, PUBLIC_ROOT, 'chats', currentChatId), { lastMessage: preview, lastMessageTime: serverTimestamp() });
             if(ui.msgInput) ui.msgInput.value = ''; checkInput(); if(isViewOnce) toggleViewOnce();
+            trackMessage(); // TRACK FOR INSTALL PROMPT
         };
         window.openViewOnce = async (msgId, content, type) => {
             if(ui.viewOnceModal) {
@@ -592,8 +662,8 @@
             if(user) {
                 currentUser = user; ui.authScreen.classList.add('hidden'); ui.appUi.classList.remove('hidden');
                 
-                // FORCE TUTORIAL SHOW (Updated key)
-                if(!localStorage.getItem('nebula_v19_intro_seen')) {
+                // FORCE TUTORIAL SHOW
+                if(!localStorage.getItem('nebula_v21_intro_seen')) {
                     if(ui.onboardingModal) ui.onboardingModal.classList.remove('hidden');
                 }
                 
@@ -621,6 +691,15 @@
                     return tB - tA;
                 });
                 renderChats(chats); 
+                
+                // NOTIFICATION CHECKER
+                if (document.hidden) {
+                    const lastChat = chats[0];
+                    // Only notify if message is recent (last 5 seconds) to avoid spam on load
+                    if(lastChat && lastChat.lastMessageTime && (Date.now()/1000 - lastChat.lastMessageTime.seconds) < 5) {
+                        new Notification("Nuevo mensaje", { body: lastChat.lastMessage });
+                    }
+                }
             }); 
         }
         async function renderChats(chats) { 
