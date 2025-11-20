@@ -8,8 +8,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Nebula Chat</title>
     
-    <!-- PWA Manifest (Data URI for single file portability) -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTmVidWxhIENoYXQiLCJzaG9ydF9uYW1lIjoiTmVidWxhIiwiZGVzY3JpcHRpb24iOiJDaGF0IGRlIENsYXNlIFBybyIs" id="manifest-placeholder">
+    <!-- Link to Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/bottts/png?seed=nebula&backgroundColor=059669">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -126,7 +127,7 @@
                 <i class="fa-solid fa-mobile-screen text-4xl text-white"></i>
             </div>
             <h2 class="text-2xl font-bold text-white mb-2">¡Instala Nebula! 📱</h2>
-            <p class="text-slate-400 mb-6 text-sm">Parece que usas mucho el chat. Instálalo para recibir notificaciones y entrar directo.</p>
+            <p class="text-slate-400 mb-6 text-sm">Recibe notificaciones y accede directo sin navegador.</p>
             
             <div class="bg-slate-800/50 p-4 rounded-xl text-left mb-6 border border-slate-700">
                 <p class="text-xs text-emerald-400 font-bold mb-1">EN IPHONE (iOS):</p>
@@ -139,11 +140,10 @@
             <button onclick="enableNotifications()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all mb-2">
                 🔔 Activar Notificaciones
             </button>
-            <button onclick="closeInstallModal()" class="text-slate-500 text-xs hover:text-white">Quizás luego</button>
         </div>
     </div>
 
-    <!-- ONBOARDING (TUTORIAL) -->
+    <!-- ONBOARDING -->
     <div id="onboarding-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-6 fade-in">
         <div class="w-full max-w-md bg-slate-900 border border-emerald-500/50 rounded-3xl p-8 text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500"></div>
@@ -366,17 +366,12 @@
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
         const YYF_URL = 'https://yyf.mubilop.com';
 
-        // MANIFEST
-        const manifest = {
-            "name": "Nebula Chat",
-            "short_name": "Nebula",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#0f172a",
-            "theme_color": "#0f172a",
-            "icons": [{"src": "https://api.dicebear.com/7.x/bottts/svg?seed=nebula", "sizes": "192x192", "type": "image/svg+xml"}]
-        };
-        document.getElementById('manifest-placeholder').setAttribute('href', 'data:application/json;base64,' + btoa(JSON.stringify(manifest)));
+        // REGISTER SW
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered')).catch(err => console.log('SW failed', err));
+            });
+        }
 
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
@@ -414,7 +409,6 @@
             closeInstallModal();
         };
         function checkInstallPrompt() {
-            // Logic to show install modal after 3 messages sent
             let count = parseInt(localStorage.getItem('nebula_msg_count') || '0');
             if(count === 3 && !localStorage.getItem('nebula_install_shown')) {
                 ui.installModal.classList.remove('hidden');
@@ -428,7 +422,7 @@
         }
 
         // --- GLOBAL HELPERS ---
-        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v21_intro_seen', 'true'); }; // Changed key to force tutorial
+        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v21_intro_seen', 'true'); };
         window.toggleStatusModal = () => { if(ui.statusModal) ui.statusModal.classList.toggle('hidden'); };
         window.setQuickPreset = (t) => { if(ui.statusInput) ui.statusInput.value = t; };
         window.saveMyStatus = async () => { if(ui.statusInput) { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); } };
