@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v17 Ultimate</title>
+    <title>Nebula Chat - v18 Fixed List</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -335,7 +335,7 @@
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
         const YYF_URL = 'https://yyf.mubilop.com';
 
-        // UI OBJECT - INITIALIZED SECURELY
+        // UI OBJECT
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
             authForm: document.getElementById('auth-form'), authBtn: document.getElementById('auth-btn'), switchBtn: document.getElementById('auth-switch-btn'), errorMsg: document.getElementById('auth-error'),
@@ -361,7 +361,7 @@
         let isViewOnce = false, mediaRecorder = null, audioChunks = [], isRecording = false, recordStartTime = 0, recordInterval = null;
 
         // --- GLOBAL HELPERS ---
-        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v17_intro_seen', 'true'); };
+        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v18_intro_seen', 'true'); };
         window.toggleStatusModal = () => { if(ui.statusModal) ui.statusModal.classList.toggle('hidden'); };
         window.setQuickPreset = (t) => { if(ui.statusInput) ui.statusInput.value = t; };
         window.saveMyStatus = async () => { if(ui.statusInput) { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); } };
@@ -590,8 +590,8 @@
             if(user) {
                 currentUser = user; ui.authScreen.classList.add('hidden'); ui.appUi.classList.remove('hidden');
                 
-                // FORCE TUTORIAL SHOW
-                if(!localStorage.getItem('nebula_v17_intro_seen')) {
+                // FORCE TUTORIAL SHOW (Updated key)
+                if(!localStorage.getItem('nebula_v18_intro_seen')) {
                     if(ui.onboardingModal) ui.onboardingModal.classList.remove('hidden');
                 }
                 
@@ -603,8 +603,26 @@
         window.logout = () => signOut(auth);
         window.closeChat = () => { currentChatId = null; if(window.innerWidth < 768) { ui.sidebar.style.transform = 'translateX(0)'; ui.chatView.style.transform = 'translateX(100%)'; } };
         
-        function listenToChats() { if(unsubscribeChats) unsubscribeChats(); const q = query(collection(db, PUBLIC_ROOT, 'chats'), where('participants', 'array-contains', currentUser.uid), orderBy('lastMessageTime', 'desc')); unsubscribeChats = onSnapshot(q, s => { const chats = []; const seen = new Set(); s.forEach(d => { if(!seen.has(d.id)){ chats.push({id: d.id, ...d.data()}); seen.add(d.id); }}); renderChats(chats); }); }
-        async function renderChats(chats) { ui.chatsList.innerHTML = ''; currentStatusBarUserIds = new Set(); for(const c of chats) { let display = {}; if(c.type === 'group') display = { username: c.name, avatar: c.groupImage || `https://ui-avatars.com/api/?name=${c.name}`, type: 'group' }; else { const other = c.participants.find(i => i !== currentUser.uid) || currentUser.uid; currentStatusBarUserIds.add(other); if(userCache[other]) display = userCache[other]; else { const s = await getDoc(doc(db, PUBLIC_ROOT, 'users', other)); if(s.exists()){ display=s.data(); userCache[other]=display; } else display={username:'User', avatar:''}; } } const el = document.createElement('div'); el.className = `p-3 flex items-center gap-3 rounded-xl border-l-4 cursor-pointer transition-all ${c.id===currentChatId ? 'bg-slate-800 border-emerald-500' : 'border-transparent hover:bg-slate-800/30'}`; el.onclick = () => openChat(c.id, c.type==='group' ? {...display, ...c} : display); el.innerHTML = `<div class="relative"><img src="${display.avatar}" class="w-12 h-12 rounded-full bg-slate-800 object-cover"></div><div class="flex-1 min-w-0"><h3 class="font-bold text-slate-200 truncate">${display.username}</h3><p class="text-xs text-slate-500 truncate">${c.lastMessage||'...'}</p></div>`; ui.chatsList.appendChild(el); } renderQuickStatusBar(Array.from(currentStatusBarUserIds)); }
+        // FIX: Remove orderBy to avoid index error
+        function listenToChats() { 
+            if(unsubscribeChats) unsubscribeChats(); 
+            const q = query(collection(db, PUBLIC_ROOT, 'chats'), where('participants', 'array-contains', currentUser.uid)); 
+            unsubscribeChats = onSnapshot(q, s => { 
+                const chats = []; const seen = new Set(); 
+                s.forEach(d => { 
+                    if(!seen.has(d.id)){ chats.push({id: d.id, ...d.data()}); seen.add(d.id); }
+                }); 
+                renderChats(chats); 
+            }); 
+        }
+        async function renderChats(chats) { 
+            ui.chatsList.innerHTML = ''; currentStatusBarUserIds = new Set(); 
+            // CLIENT SIDE SORTING
+            chats.sort((a, b) => (b.lastMessageTime?.seconds || 0) - (a.lastMessageTime?.seconds || 0));
+
+            for(const c of chats) { let display = {}; if(c.type === 'group') display = { username: c.name, avatar: c.groupImage || `https://ui-avatars.com/api/?name=${c.name}`, type: 'group' }; else { const other = c.participants.find(i => i !== currentUser.uid) || currentUser.uid; currentStatusBarUserIds.add(other); if(userCache[other]) display = userCache[other]; else { const s = await getDoc(doc(db, PUBLIC_ROOT, 'users', other)); if(s.exists()){ display=s.data(); userCache[other]=display; } else display={username:'User', avatar:''}; } } const el = document.createElement('div'); el.className = `p-3 flex items-center gap-3 rounded-xl border-l-4 cursor-pointer transition-all ${c.id===currentChatId ? 'bg-slate-800 border-emerald-500' : 'border-transparent hover:bg-slate-800/30'}`; el.onclick = () => openChat(c.id, c.type==='group' ? {...display, ...c} : display); el.innerHTML = `<div class="relative"><img src="${display.avatar}" class="w-12 h-12 rounded-full bg-slate-800 object-cover"></div><div class="flex-1 min-w-0"><h3 class="font-bold text-slate-200 truncate">${display.username}</h3><p class="text-xs text-slate-500 truncate">${c.lastMessage||'...'}</p></div>`; ui.chatsList.appendChild(el); } 
+            renderQuickStatusBar(Array.from(currentStatusBarUserIds)); 
+        }
         function renderQuickStatusBar(uids) { ui.quickStatusList.innerHTML = ''; const users = [{uid: currentUser.uid, username: 'Yo', avatar: ui.myAvatar.src, quickStatus: myCurrentStatus, isMe: true}]; uids.forEach(id => { if(id!==currentUser.uid && userCache[id] && userCache[id].quickStatus) users.push({...userCache[id], isMe: false}); }); users.forEach(u => { const d = document.createElement('div'); d.className = 'flex flex-col items-center gap-2 min-w-[64px] cursor-pointer relative group pop-in pt-2'; d.onclick = () => u.isMe ? toggleStatusModal() : startChatWith(u); d.innerHTML = `${u.quickStatus ? `<div class="status-bubble text-emerald-400">${u.quickStatus}</div>` : ''}<div class="relative p-[2px] rounded-full ${u.quickStatus ? 'bg-gradient-to-tr from-emerald-500 to-cyan-500':'bg-slate-800'}"><img src="${u.avatar}" class="w-14 h-14 rounded-full bg-slate-900 object-cover border-2 border-slate-900">${u.isMe ? '<div class="absolute bottom-0 right-0 w-5 h-5 bg-emerald-500 rounded-full border-2 border-slate-900 flex items-center justify-center"><i class="fa-solid fa-plus text-white text-[10px]"></i></div>' : ''}</div><span class="text-[10px] text-slate-400 truncate max-w-[60px]">${u.username}</span>`; ui.quickStatusList.appendChild(d); }); }
         function openChat(id, data) { currentChatId = id; currentChatData = data; ui.headerName.textContent = data.username; ui.headerAvatar.src = data.avatar; ui.headerStatusText.textContent = data.type === 'group' ? 'Grupo' : (data.quickStatus || 'En línea'); if(data.type === 'group') ui.btnAddMember.classList.remove('hidden'); else ui.btnAddMember.classList.add('hidden'); if(window.innerWidth < 768) { ui.sidebar.style.transform = 'translateX(-100%)'; ui.chatView.style.transform = 'translateX(0)'; } if(unsubscribeMessages) unsubscribeMessages(); const q = query(collection(db, PUBLIC_ROOT, 'chats', id, 'messages'), orderBy('timestamp', 'asc'), limit(50)); ui.messagesList.innerHTML = ''; unsubscribeMessages = onSnapshot(q, s => { s.docChanges().forEach(c => { if(c.type === 'added') { const m = c.doc.data(); const isMe = m.senderId === currentUser.uid; const div = document.createElement('div'); div.className = `flex w-full mb-1 ${isMe ? 'justify-end' : 'justify-start'} slide-up`; div.ondblclick = () => { const heart = document.createElement('div'); heart.className = 'msg-heart'; heart.textContent = '❤️'; div.querySelector('.relative').appendChild(heart); setTimeout(()=>heart.remove(), 1000); }; if(m.viewOnce) { if(isMe) div.innerHTML = `<div class="bg-slate-800 border border-dashed border-slate-600 text-slate-400 px-3 py-2 rounded-xl text-xs flex items-center gap-2"><i class="fa-solid fa-eye-slash"></i> Foto oculta (1 vista)</div>`; else { const btn = document.createElement('button'); btn.className = "view-once-msg"; btn.innerHTML = `<i class="fa-solid fa-fire text-emerald-400"></i> Ver secreto (1)`; btn.onclick = () => openViewOnce(c.doc.id, m.content, m.type); div.appendChild(btn); } } else { let content = ''; if(m.type==='text') content = `<span class="text-[15px]">${m.content}</span>`; else if(m.type==='image') content = `<img src="${m.content}" class="rounded-lg max-w-[200px] border border-slate-700 cursor-pointer" onclick="window.open(this.src)">`; else if(m.type==='audio') content = `<div class="audio-player-container"><button class="play-btn" onclick="playAudio(this, '${m.content}')"><i class="fa-solid fa-play text-white"></i></button><div class="audio-wave text-emerald-400">${[...Array(10)].map(()=>`<div class="wave-bar" style="height:${Math.random()*100}%"></div>`).join('')}</div></div>`; div.innerHTML = `<div class="max-w-[75%] px-4 py-2 shadow-sm relative break-words ${isMe ? 'msg-bubble-me text-white' : 'msg-bubble-other text-slate-200'}">${content}${isMe?'<div class="text-[9px] opacity-60 text-right mt-1"><i class="fa-solid fa-check"></i></div>':''}</div>`; } ui.messagesList.appendChild(div); ui.messagesList.scrollTop = ui.messagesList.scrollHeight; } }); }); setTimeout(() => ui.msgInput.focus(), 300); }
         let searchTimer; 
