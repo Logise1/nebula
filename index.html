@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - Modern</title>
+    <title>Nebula Chat - v10 Final</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -14,7 +14,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Slate 900 - Classic Nebula Theme */
+            background-color: #0f172a; /* Slate 900 */
             color: #e2e8f0;
             overflow: hidden;
             user-select: none;
@@ -82,24 +82,23 @@
         }
         .view-once-msg:hover { background: #475569; }
 
-        /* STATUS BUBBLE FIXED */
+        /* STATUS BUBBLE */
         .status-bubble {
-            background: #1e293b; /* Dark slate */
+            background: #1e293b; 
             border: 1px solid #475569;
             padding: 4px 10px;
             border-radius: 12px;
             white-space: nowrap;
             position: absolute;
-            top: -35px; /* Lifted higher */
+            top: -30px; /* Positioned relative to avatar container */
             left: 50%;
             transform: translateX(-50%);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             z-index: 50;
             font-size: 0.7rem;
             font-weight: 600;
             color: #e2e8f0;
         }
-        /* Triangle */
         .status-bubble::after {
             content: '';
             position: absolute;
@@ -240,9 +239,10 @@
                     <input type="text" id="user-search" placeholder="Buscar..." class="w-full bg-slate-800 text-sm text-white rounded-xl px-4 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
                 </div>
 
-                <!-- QUICK STATUS (FIXED PADDING TOP-12) -->
-                <div class="px-4 pt-12 pb-4 border-b border-slate-800/50 bg-slate-900/50 relative z-10">
-                    <div class="flex gap-5 overflow-x-auto hide-scroll items-center min-h-[60px] px-1" id="quick-status-list"></div>
+                <!-- QUICK STATUS AREA (FIXED PADDING) -->
+                <div class="border-b border-slate-800/50 bg-slate-900/50 relative z-10">
+                    <!-- Scroll container with internal padding -->
+                    <div class="flex gap-5 overflow-x-auto hide-scroll items-center min-h-[85px] px-6 pt-10 pb-2" id="quick-status-list"></div>
                 </div>
 
                 <div id="search-results-area" class="hidden bg-slate-800/95 p-2 text-xs text-emerald-400 font-bold uppercase sticky top-0 flex justify-between items-center z-10 shadow-lg">
@@ -334,7 +334,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_ID = "nebula_chat_v9"; 
+        const APP_ID = "nebula_chat_v10"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
 
         const ui = {
@@ -544,7 +544,9 @@
                 unsubscribeMyProfile = onSnapshot(doc(db, PUBLIC_ROOT, 'users', user.uid), s => {
                     if(s.exists()) {
                         const d = s.data(); ui.myUsername.textContent = d.username; ui.myAvatar.src = d.avatar;
-                        myCurrentStatus = d.quickStatus; renderQuickStatusBar([]);
+                        myCurrentStatus = d.quickStatus; 
+                        // FORCE RENDER TO SHOW ME
+                        renderQuickStatusBar([]);
                     }
                 });
                 listenToChats();
@@ -574,16 +576,20 @@
             });
         }
 
+        // Variable Global to store active users
+        let currentStatusBarUserIds = new Set();
+
         async function renderChats(chats) {
             if(!ui.searchResultsArea.classList.contains('hidden')) return;
-            ui.chatsList.innerHTML = ''; const uids = new Set([currentUser.uid]);
+            ui.chatsList.innerHTML = ''; 
+            currentStatusBarUserIds = new Set(); // Reset
             
             for(const c of chats) {
                 let display = {};
                 if(c.type === 'group') display = { username: c.name, avatar: c.groupImage || `https://ui-avatars.com/api/?name=${c.name}`, type: 'group' };
                 else {
                     const other = c.participants.find(i => i !== currentUser.uid) || currentUser.uid;
-                    uids.add(other);
+                    currentStatusBarUserIds.add(other); // Add friend to status list
                     if(userCache[other]) display = userCache[other];
                     else {
                         const s = await getDoc(doc(db, PUBLIC_ROOT, 'users', other));
@@ -600,22 +606,29 @@
                 `;
                 ui.chatsList.appendChild(el);
             }
-            renderQuickStatusBar(Array.from(uids));
+            renderQuickStatusBar(Array.from(currentStatusBarUserIds));
         }
 
         function renderQuickStatusBar(uids) {
             ui.quickStatusList.innerHTML = '';
+            // Always add ME first
             const users = [{uid: currentUser.uid, username: 'Yo', avatar: ui.myAvatar.src, quickStatus: myCurrentStatus, isMe: true}];
-            uids.forEach(id => { if(id !== currentUser.uid && userCache[id] && userCache[id].quickStatus) users.push({...userCache[id], isMe: false}); });
+            
+            uids.forEach(id => { 
+                if(id !== currentUser.uid && userCache[id] && userCache[id].quickStatus) {
+                    users.push({...userCache[id], isMe: false});
+                }
+            });
             
             users.forEach(u => {
                 const d = document.createElement('div');
-                d.className = 'flex flex-col items-center gap-2 min-w-[64px] cursor-pointer relative group pop-in';
+                d.className = 'flex flex-col items-center gap-2 min-w-[64px] cursor-pointer relative group pop-in pt-2';
                 d.onclick = () => u.isMe ? toggleStatusModal() : startChatWith(u);
                 d.innerHTML = `
                     ${u.quickStatus ? `<div class="status-bubble text-emerald-400">${u.quickStatus}</div>` : ''}
                     <div class="relative p-[2px] rounded-full ${u.quickStatus ? 'bg-gradient-to-tr from-emerald-500 to-cyan-500' : 'bg-slate-800'}">
                         <img src="${u.avatar}" class="w-14 h-14 rounded-full bg-slate-900 object-cover border-2 border-slate-900">
+                        ${u.isMe ? `<div class="absolute bottom-0 right-0 w-5 h-5 bg-emerald-500 rounded-full border-2 border-slate-900 flex items-center justify-center"><i class="fa-solid fa-plus text-white text-[10px]"></i></div>` : ''}
                     </div>
                     <span class="text-[10px] text-slate-400 truncate max-w-[60px]">${u.username}</span>
                 `;
