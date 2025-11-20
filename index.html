@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v19 Fixed</title>
+    <title>Nebula Chat - v20 Final Fix</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -357,6 +357,8 @@
 
         let currentUser = null, currentChatId = null, currentChatData = null; 
         let isRegistering = false, unsubscribeMessages = null, unsubscribeChats = null, unsubscribeMyProfile = null;
+        // --- MISSING VAR RESTORED HERE: ---
+        let currentStatusBarUserIds = new Set(); 
         const userCache = {}; let myCurrentStatus = "";
         let isViewOnce = false, mediaRecorder = null, audioChunks = [], isRecording = false, recordStartTime = 0, recordInterval = null;
 
