@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v18 Fixed List</title>
+    <title>Nebula Chat - v19 Fixed</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -335,7 +335,7 @@
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
         const YYF_URL = 'https://yyf.mubilop.com';
 
-        // UI OBJECT
+        // UI OBJECT - INITIALIZED SECURELY
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
             authForm: document.getElementById('auth-form'), authBtn: document.getElementById('auth-btn'), switchBtn: document.getElementById('auth-switch-btn'), errorMsg: document.getElementById('auth-error'),
@@ -361,7 +361,7 @@
         let isViewOnce = false, mediaRecorder = null, audioChunks = [], isRecording = false, recordStartTime = 0, recordInterval = null;
 
         // --- GLOBAL HELPERS ---
-        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v18_intro_seen', 'true'); };
+        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v19_intro_seen', 'true'); };
         window.toggleStatusModal = () => { if(ui.statusModal) ui.statusModal.classList.toggle('hidden'); };
         window.setQuickPreset = (t) => { if(ui.statusInput) ui.statusInput.value = t; };
         window.saveMyStatus = async () => { if(ui.statusInput) { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); } };
@@ -591,7 +591,7 @@
                 currentUser = user; ui.authScreen.classList.add('hidden'); ui.appUi.classList.remove('hidden');
                 
                 // FORCE TUTORIAL SHOW (Updated key)
-                if(!localStorage.getItem('nebula_v18_intro_seen')) {
+                if(!localStorage.getItem('nebula_v19_intro_seen')) {
                     if(ui.onboardingModal) ui.onboardingModal.classList.remove('hidden');
                 }
                 
@@ -612,13 +612,17 @@
                 s.forEach(d => { 
                     if(!seen.has(d.id)){ chats.push({id: d.id, ...d.data()}); seen.add(d.id); }
                 }); 
+                // CLIENT SIDE SORTING
+                chats.sort((a, b) => {
+                    const tA = a.lastMessageTime ? a.lastMessageTime.seconds : 0;
+                    const tB = b.lastMessageTime ? b.lastMessageTime.seconds : 0;
+                    return tB - tA;
+                });
                 renderChats(chats); 
             }); 
         }
         async function renderChats(chats) { 
             ui.chatsList.innerHTML = ''; currentStatusBarUserIds = new Set(); 
-            // CLIENT SIDE SORTING
-            chats.sort((a, b) => (b.lastMessageTime?.seconds || 0) - (a.lastMessageTime?.seconds || 0));
 
             for(const c of chats) { let display = {}; if(c.type === 'group') display = { username: c.name, avatar: c.groupImage || `https://ui-avatars.com/api/?name=${c.name}`, type: 'group' }; else { const other = c.participants.find(i => i !== currentUser.uid) || currentUser.uid; currentStatusBarUserIds.add(other); if(userCache[other]) display = userCache[other]; else { const s = await getDoc(doc(db, PUBLIC_ROOT, 'users', other)); if(s.exists()){ display=s.data(); userCache[other]=display; } else display={username:'User', avatar:''}; } } const el = document.createElement('div'); el.className = `p-3 flex items-center gap-3 rounded-xl border-l-4 cursor-pointer transition-all ${c.id===currentChatId ? 'bg-slate-800 border-emerald-500' : 'border-transparent hover:bg-slate-800/30'}`; el.onclick = () => openChat(c.id, c.type==='group' ? {...display, ...c} : display); el.innerHTML = `<div class="relative"><img src="${display.avatar}" class="w-12 h-12 rounded-full bg-slate-800 object-cover"></div><div class="flex-1 min-w-0"><h3 class="font-bold text-slate-200 truncate">${display.username}</h3><p class="text-xs text-slate-500 truncate">${c.lastMessage||'...'}</p></div>`; ui.chatsList.appendChild(el); } 
             renderQuickStatusBar(Array.from(currentStatusBarUserIds)); 
