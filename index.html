@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - Spy Edition</title>
+    <title>Nebula Chat - Modern</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -14,10 +14,10 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020617; /* Slate 950 */
+            background-color: #0f172a; /* Slate 900 - Classic Nebula Theme */
             color: #e2e8f0;
             overflow: hidden;
-            user-select: none; /* App-like feel */
+            user-select: none;
         }
 
         .app-viewport {
@@ -28,113 +28,121 @@
             flex-direction: column;
         }
 
-        /* Glassmorphism & Blur */
+        /* Glassmorphism */
         .glass {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
         
         /* Scrollbars */
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Animations */
         .fade-in { animation: fadeIn 0.2s ease-out; }
         .slide-up { animation: slideUp 0.3s ease-out; }
         .pop-in { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .recording-pulse { animation: pulseRed 1s infinite; }
+        .pulse-recording { animation: pulseRed 1.5s infinite; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes pulseRed { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
         /* Message Bubbles */
         .msg-bubble-me {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
             border-radius: 16px 16px 4px 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .msg-bubble-other {
             background: #1e293b;
             border-radius: 16px 16px 16px 4px;
             border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        /* Secret Message Style */
-        .secret-msg {
-            background: #3b0764; /* Indigo/Purple dark */
-            border: 1px dashed #a855f7;
-            color: #e9d5ff;
+        /* View Once Message Style */
+        .view-once-msg {
+            background: #334155;
+            border: 1px dashed #94a3b8;
+            color: #f1f5f9;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .view-once-msg:hover { background: #475569; }
+
+        /* STATUS BUBBLE FIXED */
+        .status-bubble {
+            background: #1e293b; /* Dark slate */
+            border: 1px solid #475569;
+            padding: 4px 10px;
+            border-radius: 12px;
+            white-space: nowrap;
+            position: absolute;
+            top: -35px; /* Lifted higher */
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 50;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        /* Triangle */
+        .status-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -5px; left: 50%; transform: translateX(-50%) rotate(45deg);
+            width: 8px; height: 8px;
+            background: #1e293b;
+            border-right: 1px solid #475569; border-bottom: 1px solid #475569;
         }
 
-        /* EMOJI PICKER REDESIGN */
+        /* Emoji Picker */
         .emoji-picker-panel {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             gap: 4px;
             padding: 8px;
-            background: #0f172a;
+            background: #1e293b;
             border: 1px solid #334155;
             border-radius: 12px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
         }
-        .emoji-btn {
-            font-size: 1.2rem;
-            padding: 4px;
-            text-align: center;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .emoji-btn:hover { background: rgba(255,255,255,0.1); }
+        .emoji-btn:hover { background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; }
 
-        /* Status Bubble Fixed */
-        .status-bubble {
-            background: #1e293b;
-            border: 1px solid #334155;
-            padding: 2px 8px;
-            border-radius: 10px;
-            white-space: nowrap;
-            position: absolute;
-            top: -25px;
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            z-index: 10;
-        }
-        .status-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -4px; left: 50%; transform: translateX(-50%) rotate(45deg);
-            width: 6px; height: 6px;
-            background: #1e293b;
-            border-right: 1px solid #334155; border-bottom: 1px solid #334155;
-        }
-        
         canvas { touch-action: none; }
     </style>
 </head>
 <body>
 
     <!-- AUTH SCREEN -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 to-slate-950">
-        <div class="w-full max-w-md bg-slate-900/80 backdrop-blur-xl border border-slate-700 p-8 rounded-3xl shadow-2xl slide-up">
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900">
+        <div class="w-full max-w-md bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl slide-up">
             <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 animate-pulse">
-                    <i class="fa-solid fa-user-secret text-4xl text-emerald-500"></i>
+                <div class="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                    <i class="fa-solid fa-comments text-4xl text-emerald-500"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-white mb-1">Nebula Spy</h1>
-                <p class="text-slate-400 text-xs uppercase tracking-widest">Mensajería Segura</p>
+                <h1 class="text-3xl font-bold text-white mb-2">Nebula Chat</h1>
+                <p class="text-slate-400 text-sm">Conecta con amigos</p>
             </div>
             <form id="auth-form" class="space-y-4">
-                <input type="text" id="auth-username" required class="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 px-4 text-white focus:border-emerald-500 outline-none placeholder-slate-600" placeholder="Agente (Usuario)">
-                <input type="password" id="auth-password" required class="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 px-4 text-white focus:border-emerald-500 outline-none placeholder-slate-600" placeholder="Código de acceso (Pass)">
-                <button type="submit" id="auth-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">Acceder</button>
+                <input type="text" id="auth-username" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-white focus:border-emerald-500 outline-none placeholder-slate-500" placeholder="Nombre de usuario">
+                <input type="password" id="auth-password" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-white focus:border-emerald-500 outline-none placeholder-slate-500" placeholder="Contraseña">
+                <button type="submit" id="auth-btn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95">Entrar</button>
             </form>
             <div class="mt-4 text-center">
-                <button id="auth-switch-btn" class="text-emerald-400 text-xs font-semibold hover:underline">CREAR CUENTA NUEVA</button>
+                <button id="auth-switch-btn" class="text-emerald-400 text-xs font-semibold hover:underline">¿No tienes cuenta? Regístrate</button>
             </div>
             <div id="auth-error" class="text-red-400 text-xs text-center mt-2 hidden"></div>
         </div>
@@ -144,22 +152,22 @@
     <div id="status-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 fade-in">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 relative">
             <button onclick="toggleStatusModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-lg font-bold text-white mb-4">Mi Estado</h3>
+            <h3 class="text-lg font-bold text-white mb-4">Actualizar Estado</h3>
             <div class="flex gap-2 mb-4 overflow-x-auto pb-2 hide-scroll">
-                <button onclick="setQuickPreset('🤫 En misión')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">🤫 En misión</button>
-                <button onclick="setQuickPreset('🎮 Gaming')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">🎮 Gaming</button>
-                <button onclick="setQuickPreset('💤 Durmiendo')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">💤 Durmiendo</button>
+                <button onclick="setQuickPreset('En clase 📚')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">En clase 📚</button>
+                <button onclick="setQuickPreset('Jugando 🎮')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">Jugando 🎮</button>
+                <button onclick="setQuickPreset('Gimnasio 💪')" class="bg-slate-800 px-3 py-1 rounded-full text-xs text-slate-300 border border-slate-700">Gimnasio 💪</button>
             </div>
-            <input type="text" id="status-input" maxlength="20" placeholder="Estado..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4 text-center">
+            <input type="text" id="status-input" maxlength="20" placeholder="Tu estado..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4 text-center">
             <button onclick="saveMyStatus()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl">Guardar</button>
         </div>
     </div>
 
     <!-- MODAL WHITEBOARD -->
-    <div id="draw-modal" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4 fade-in">
+    <div id="draw-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-4 fade-in">
         <div class="relative w-full max-w-md">
             <button onclick="toggleDrawModal()" class="absolute -top-10 right-0 text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
-            <div class="bg-white rounded-xl overflow-hidden shadow-2xl border-4 border-slate-700">
+            <div class="bg-white rounded-xl overflow-hidden shadow-2xl">
                 <canvas id="draw-canvas" width="350" height="350" class="cursor-crosshair w-full h-auto touch-none"></canvas>
             </div>
             <div class="flex justify-between items-center mt-4 gap-4">
@@ -169,7 +177,7 @@
                     <button onclick="setBrushColor('#3b82f6')" class="w-8 h-8 rounded-full bg-blue-500 border-2 border-white"></button>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="clearCanvas()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs border border-slate-600"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="clearCanvas()" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs"><i class="fa-solid fa-trash"></i></button>
                     <button onclick="sendDrawing()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -177,34 +185,31 @@
         </div>
     </div>
 
-    <!-- SECRET VIEW MODAL -->
-    <div id="secret-view-modal" class="fixed inset-0 z-[60] bg-black flex items-center justify-center hidden">
-        <div class="text-center p-4 w-full max-w-md">
-            <div id="secret-content-container" class="mb-6 flex justify-center">
-                <!-- Content injected here -->
+    <!-- VIEW ONCE VIEWER -->
+    <div id="view-once-modal" class="fixed inset-0 z-[60] bg-black flex items-center justify-center hidden p-4">
+        <div class="text-center w-full max-w-md">
+            <div id="view-once-content" class="mb-6 flex justify-center items-center min-h-[200px]">
+                <!-- Content -->
             </div>
-            <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden mb-4">
-                <div id="secret-timer-bar" class="bg-red-500 h-full w-full"></div>
-            </div>
-            <p class="text-red-500 font-mono text-sm animate-pulse">AUTODESTRUCCIÓN INMINENTE</p>
-            <button onclick="closeSecretModal()" class="mt-8 bg-slate-800 text-white px-6 py-2 rounded-full border border-slate-700 hover:bg-slate-700">Cerrar</button>
+            <p class="text-slate-500 text-sm mb-6"><i class="fa-solid fa-fire"></i> Este mensaje ha desaparecido del chat.</p>
+            <button onclick="closeViewOnceModal()" class="bg-slate-800 text-white px-8 py-3 rounded-full hover:bg-slate-700 transition-colors">Cerrar</button>
         </div>
     </div>
 
-    <!-- MODAL CREATE GROUP / ADD MEMBER -->
+    <!-- MODALS: GROUP & ADD MEMBER -->
     <div id="group-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6">
             <button onclick="toggleGroupModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="text-lg font-bold text-white mb-4">Nuevo Grupo</h3>
-            <input type="text" id="group-name-input" placeholder="Nombre..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
+            <input type="text" id="group-name-input" placeholder="Nombre del grupo..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
             <button onclick="createGroup()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl">Crear</button>
         </div>
     </div>
     <div id="add-member-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
         <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 flex flex-col max-h-[80vh]">
             <button onclick="toggleAddMemberModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-lg font-bold text-white mb-4">Añadir Agente</h3>
-            <input type="text" id="add-member-search" placeholder="Buscar..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
+            <h3 class="text-lg font-bold text-white mb-4">Añadir Miembro</h3>
+            <input type="text" id="add-member-search" placeholder="Buscar usuario..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
             <div id="add-member-results" class="flex-1 overflow-y-auto space-y-2 min-h-[150px]"></div>
         </div>
     </div>
@@ -226,20 +231,18 @@
                         <h1 id="my-username" class="font-bold text-lg text-white truncate max-w-[120px]">...</h1>
                     </div>
                     <div class="flex gap-3">
-                        <button onclick="toggleGroupModal()" class="text-slate-400 hover:text-emerald-400"><i class="fa-solid fa-users-medical text-xl"></i></button>
-                        <button onclick="logout()" class="text-slate-400 hover:text-red-400"><i class="fa-solid fa-right-from-bracket text-xl"></i></button>
+                        <button onclick="toggleGroupModal()" class="text-slate-400 hover:text-emerald-400" title="Crear Grupo"><i class="fa-solid fa-users text-xl"></i></button>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-400" title="Salir"><i class="fa-solid fa-right-from-bracket text-xl"></i></button>
                     </div>
                 </header>
 
                 <div class="px-4 py-3 bg-slate-900">
-                    <input type="text" id="user-search" placeholder="Buscar agentes..." class="w-full bg-slate-800 text-sm text-white rounded-xl px-4 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
+                    <input type="text" id="user-search" placeholder="Buscar..." class="w-full bg-slate-800 text-sm text-white rounded-xl px-4 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
                 </div>
 
-                <!-- QUICK STATUS -->
-                <div class="px-4 pt-6 pb-4 border-b border-slate-800/50 bg-slate-900/50">
-                    <div class="flex gap-5 overflow-x-auto hide-scroll items-center min-h-[90px] px-1" id="quick-status-list">
-                        <!-- Injected JS -->
-                    </div>
+                <!-- QUICK STATUS (FIXED PADDING TOP-12) -->
+                <div class="px-4 pt-12 pb-4 border-b border-slate-800/50 bg-slate-900/50 relative z-10">
+                    <div class="flex gap-5 overflow-x-auto hide-scroll items-center min-h-[60px] px-1" id="quick-status-list"></div>
                 </div>
 
                 <div id="search-results-area" class="hidden bg-slate-800/95 p-2 text-xs text-emerald-400 font-bold uppercase sticky top-0 flex justify-between items-center z-10 shadow-lg">
@@ -273,12 +276,12 @@
                 </header>
 
                 <!-- Messages -->
-                <div id="messages-list" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2 flex flex-col bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-slate-950 relative"></div>
+                <div id="messages-list" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-2 flex flex-col bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] bg-slate-950 relative"></div>
 
                 <!-- RECORDING OVERLAY -->
-                <div id="recording-overlay" class="absolute bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 hidden flex items-center gap-3 recording-pulse">
+                <div id="recording-overlay" class="absolute bottom-24 left-1/2 -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-full shadow-2xl z-50 hidden flex items-center gap-3 pulse-recording">
                     <i class="fa-solid fa-microphone"></i>
-                    <span class="font-mono font-bold">GRABANDO... <span id="record-timer">0:00</span></span>
+                    <span class="font-mono font-bold text-sm">GRABANDO... <span id="record-timer">0:00</span></span>
                 </div>
 
                 <!-- EMOJI PICKER -->
@@ -292,7 +295,7 @@
                         <!-- Tools -->
                         <div class="flex gap-1">
                             <button type="button" onclick="toggleDrawModal()" class="w-10 h-10 text-slate-400 hover:text-pink-400 bg-slate-800/50 rounded-full transition-colors"><i class="fa-solid fa-paintbrush"></i></button>
-                            <button type="button" onclick="toggleViewOnce()" id="btn-view-once" class="w-10 h-10 text-slate-400 hover:text-white bg-slate-800/50 rounded-full transition-all border border-transparent" title="Mensaje de 1 vista"><i class="fa-solid fa-1"></i></button>
+                            <button type="button" onclick="toggleViewOnce()" id="btn-view-once" class="w-10 h-10 text-slate-400 hover:text-white bg-slate-800/50 rounded-full transition-all border border-transparent" title="Ver una vez"><i class="fa-solid fa-1"></i></button>
                         </div>
                         
                         <!-- Text Input -->
@@ -331,7 +334,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_ID = "nebula_chat_v8"; 
+        const APP_ID = "nebula_chat_v9"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
 
         const ui = {
@@ -348,7 +351,7 @@
             addMemberModal: document.getElementById('add-member-modal'), addMemberSearch: document.getElementById('add-member-search'), addMemberResults: document.getElementById('add-member-results'),
             emojiPicker: document.getElementById('emoji-picker'), emojiContainer: document.getElementById('emoji-container'),
             drawModal: document.getElementById('draw-modal'), drawCanvas: document.getElementById('draw-canvas'), drawViewOnceHint: document.getElementById('draw-view-once-hint'),
-            btnViewOnce: document.getElementById('btn-view-once'), secretModal: document.getElementById('secret-view-modal'), secretContent: document.getElementById('secret-content-container'),
+            btnViewOnce: document.getElementById('btn-view-once'), viewOnceModal: document.getElementById('view-once-modal'), viewOnceContent: document.getElementById('view-once-content'),
             actionBtn: document.getElementById('action-btn'), actionIcon: document.getElementById('action-icon'), recordingOverlay: document.getElementById('recording-overlay'), recordTimer: document.getElementById('record-timer')
         };
 
@@ -362,7 +365,6 @@
         const userCache = {}; 
         let myCurrentStatus = "";
         
-        // New States
         let isViewOnce = false;
         let mediaRecorder = null;
         let audioChunks = [];
@@ -370,22 +372,21 @@
         let recordStartTime = 0;
         let recordInterval = null;
 
-        // --- EMOJIS REFIXED ---
-        const emojis = ["😀","😂","😍","😎","😭","😡","👍","👎","👋","🙏","🔥","✨","💩","👻","💀","👽","🤖","🎃","🧠","👀","💪","🦶","💋","💘","💔","💣","💥","💯","💢","💬","💤","👋","✋","👌","✌","🤞","🤟","🤙","👈","👉","👆","👇","🧠","🫀","👀","👁","👅","👄","👶","🧒","👦","👧","🧑","👱","👨","🧔","👨‍🦰","👨‍🦱","👨‍🦳","👨‍🦲","👩","👱‍♀️","👩‍🦰","👩‍🦱","👩‍🦳","👩‍🦲","🧓","👴","👵","🙍","🙍‍♂️","🙍‍♀️","🙎","🙎‍♂️","🙎‍♀️","🙅","🙅‍♂️","🙅‍♀️","🙆","🙆‍♂️","🙆‍♀️","💁","💁‍♂️","💁‍♀️","🙋","🙋‍♂️","🙋‍♀️","🙇","🙇‍♂️","🙇‍♀️","🤦","🤦‍♂️","🤦‍♀️","🤷","🤷‍♂️","🤷‍♀️","🧑‍⚕️","👨‍⚕️","👩‍⚕️","🧑‍🎓","👨‍🎓","👩‍🎓","🧑‍🏫","👨‍🏫","👩‍🏫","🧑‍⚖️","👨‍⚖️","👩‍⚖️","🧑‍🌾","👨‍🌾","👩‍🌾","🧑‍🍳","👨‍🍳","👩‍🍳","🧑‍🔧","👨‍🔧","👩‍🔧","🧑‍🏭","👨‍🏭","👩‍🏭","🧑‍💼","👨‍💼","👩‍💼","🧑‍🔬","👨‍🔬","👩‍🔬","🧑‍💻","👨‍💻","👩‍💻","🧑‍🎤","👨‍🎤","👩‍🎤","🧑‍🎨","👨‍🎨","👩‍🎨","🧑‍✈️","👨‍✈️","👩‍✈️","🧑‍🚀","👨‍🚀","👩‍🚀","🧑‍🚒","👨‍🚒","👩‍🚒","👮","👮‍♂️","👮‍♀️","🕵","🕵️‍♂️","🕵️‍♀️","💂","💂‍♂️","💂‍♀️","👷","👷‍♂️","👷‍♀️","🤴","👸","👳","👳‍♂️","👳‍♀️","👲","🧕","🤵","🤵‍♂️","🤵‍♀️","👰","👰‍♂️","👰‍♀️","🤰","🤱","👩‍🍼","👨‍🍼","🧑‍🍼","👼","🎅","🤶","🧑‍🎄","🦸","🦸‍♂️","🦸‍♀️","🦹","🦹‍♂️","🦹‍♀️","🧙","🧙‍♂️","🧙‍♀️","🧚","🧚‍♂️","🧚‍♀️","🧛","🧛‍♂️","🧛‍♀️","🧜","🧜‍♂️","🧜‍♀️","🧝","🧝‍♂️","🧝‍♀️","🧞","🧞‍♂️","🧞‍♀️","🧟","🧟‍♂️","🧟‍♀️","💆","💆‍♂️","💆‍♀️","💇","💇‍♂️","💇‍♀️","🚶","🚶‍♂️","🚶‍♀️","🧍","🧍‍♂️","🧍‍♀️","🧎","🧎‍♂️","🧎‍♀️","🧑‍🦯","👨‍🦯","👩‍🦯","🧑‍🦼","👨‍🦼","👩‍🦼","🧑‍🦽","👨‍🦽","👩‍🦽","🏃","🏃‍♂️","🏃‍♀️","💃","🕺","🕴","👯","👯‍♂️","👯‍♀️","🧖","🧖‍♂️","🧖‍♀️","🧗","🧗‍♂️","🧗‍♀️","🤺","🏇","⛷","🏂","🏌","🏌️‍♂️","🏌️‍♀️","🏄","🏄‍♂️","🏄‍♀️","🚣","🚣‍♂️","🚣‍♀️","🏊","🏊‍♂️","🏊‍♀️","⛹","⛹️‍♂️","⛹️‍♀️","🏋","🏋️‍♂️","🏋️‍♀️","🚴","🚴‍♂️","🚴‍♀️","🚵","🚵‍♂️","🚵‍♀️","🤸","🤸‍♂️","🤸‍♀️","🤼","🤼‍♂️","🤼‍♀️","🤽","🤽‍♂️","🤽‍♀️","🤾","🤾‍♂️","🤾‍♀️","🤹","🤹‍♂️","🤹‍♀️","🧘","🧘‍♂️","🧘‍♀️","🛀","🛌","🧑‍🤝‍🧑","👭","👫","👬","💏","👩‍❤️‍💋‍👨","👨‍❤️‍💋‍👨","👩‍❤️‍💋‍👩","💑","👩‍❤️‍👨","👨‍❤️‍👨","👩‍❤️‍👩","👪","👨‍👩‍👦","👨‍👩‍👧","👨‍👩‍👧‍👦","👨‍👩‍👦‍👦","👨‍👩‍👧‍👧","👨‍👨‍👦","👨‍👨‍👧","👨‍👨‍👧‍👦","👨‍👨‍👦‍👦","👨‍👨‍👧‍👧","👩‍👩‍👦","👩‍👩‍👧","👩‍👩‍👧‍👦","👩‍👩‍👦‍👦","👩‍👩‍👧‍👧","👨‍👦","👨‍👦‍👦","👨‍👧","👨‍👧‍👦","👨‍👧‍👧","👩‍👦","👩‍👦‍👦","👩‍👧","👩‍👧‍👦","👩‍👧‍👧","🗣","👤","👥","🫂","👣","🦰","🦱","🦳","🦲"];
+        // --- EMOJIS ---
+        const emojis = ["😀","😂","😍","😎","😭","😡","👍","👎","👋","🙏","🔥","✨","💩","👻","💀","👽","🤖","🎃","🧠","👀","💪","🦶","💋","💘","💔","💣","💥","💯","💢","💬","💤"];
         emojis.forEach(e => {
             const btn = document.createElement('div');
             btn.textContent = e;
-            btn.className = 'emoji-btn';
+            btn.className = 'emoji-btn text-center';
             btn.onclick = () => { ui.msgInput.value += e; ui.msgInput.focus(); checkInput(); };
             ui.emojiContainer.appendChild(btn);
         });
         window.toggleEmojiPicker = () => ui.emojiPicker.classList.toggle('hidden');
         document.addEventListener('click', e => {
-            if(!ui.emojiPicker.contains(e.target) && !e.target.closest('.fa-face-smile') && !ui.emojiPicker.classList.contains('hidden')) 
-                ui.emojiPicker.classList.add('hidden');
+            if(!ui.emojiPicker.contains(e.target) && !e.target.closest('.fa-face-smile') && !ui.emojiPicker.classList.contains('hidden')) ui.emojiPicker.classList.add('hidden');
         });
 
-        // --- VIEW ONCE LOGIC ---
+        // --- VIEW ONCE ---
         window.toggleViewOnce = () => {
             isViewOnce = !isViewOnce;
             if(isViewOnce) {
@@ -395,24 +396,20 @@
                 ui.btnViewOnce.classList.remove('text-white', 'bg-emerald-600', 'border-emerald-500');
                 ui.btnViewOnce.classList.add('text-slate-400', 'bg-slate-800/50', 'border-transparent');
             }
-            // Update visual hint for drawer
-            ui.drawViewOnceHint.textContent = isViewOnce ? "⚠️ Este dibujo será de 1 sola vista" : "";
+            ui.drawViewOnceHint.textContent = isViewOnce ? "⚠️ Imagen de 1 vista" : "";
         };
 
-        // --- AUDIO RECORDING LOGIC ---
-        // Switch between Mic and Plane icon based on input
+        // --- AUDIO ---
         ui.msgInput.addEventListener('input', checkInput);
         function checkInput() {
             if(ui.msgInput.value.trim().length > 0) {
                 ui.actionIcon.className = "fa-solid fa-paper-plane";
                 ui.actionBtn.onclick = () => sendMessage(ui.msgInput.value);
-                // Remove recording listeners when in send mode
                 ui.actionBtn.onmousedown = null; ui.actionBtn.onmouseup = null;
                 ui.actionBtn.ontouchstart = null; ui.actionBtn.ontouchend = null;
             } else {
                 ui.actionIcon.className = "fa-solid fa-microphone";
                 ui.actionBtn.onclick = null; 
-                // Add recording listeners
                 ui.actionBtn.onmousedown = window.startRecordingLogic; 
                 ui.actionBtn.onmouseup = window.stopRecordingLogic;
                 ui.actionBtn.ontouchstart = (e) => { e.preventDefault(); window.startRecordingLogic(); };
@@ -421,7 +418,7 @@
         }
 
         window.startRecordingLogic = async () => {
-            if(ui.msgInput.value.trim().length > 0) return; // Don't record if typing
+            if(ui.msgInput.value.trim().length > 0) return;
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
@@ -432,13 +429,10 @@
                     const reader = new FileReader();
                     reader.onloadend = () => {
                         const base64Audio = reader.result;
-                        // Limit size for firestore safety (~800kb safety)
-                        if(base64Audio.length < 900000) { 
-                            sendMessage(base64Audio, 'audio'); 
-                        } else { alert("Audio muy largo, intenta menos tiempo."); }
+                        if(base64Audio.length < 900000) { sendMessage(base64Audio, 'audio'); } 
+                        else { alert("Audio muy largo."); }
                     };
                     reader.readAsDataURL(audioBlob);
-                    // Stop stream tracks
                     stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRecorder.start();
@@ -448,70 +442,51 @@
                 recordInterval = setInterval(() => {
                     const diff = Math.floor((Date.now() - recordStartTime)/1000);
                     ui.recordTimer.textContent = `0:0${diff}`;
-                    if(diff >= 10) window.stopRecordingLogic(); // 10s limit
+                    if(diff >= 10) window.stopRecordingLogic(); 
                 }, 1000);
-            } catch(err) { console.error("Mic error:", err); alert("Permiso de micro denegado"); }
+            } catch(err) { console.error(err); alert("Permite el micrófono."); }
         };
 
         window.stopRecordingLogic = () => {
             if(!isRecording || !mediaRecorder) return;
-            mediaRecorder.stop();
-            isRecording = false;
+            mediaRecorder.stop(); isRecording = false;
             ui.recordingOverlay.classList.add('hidden');
-            clearInterval(recordInterval);
-            ui.recordTimer.textContent = "0:00";
+            clearInterval(recordInterval); ui.recordTimer.textContent = "0:00";
         };
 
-        // --- MESSAGING CORE ---
+        // --- MESSAGING ---
         window.sendMessage = async (content, type = 'text') => {
             if(!content || !currentChatId) return;
-            
             const msgData = {
-                content: content,
-                type: type, // 'text', 'image', 'audio'
-                senderId: currentUser.uid,
-                timestamp: serverTimestamp(),
-                viewOnce: isViewOnce
+                content: content, type: type, senderId: currentUser.uid,
+                timestamp: serverTimestamp(), viewOnce: isViewOnce
             };
-
-            // Send
             await addDoc(collection(db, PUBLIC_ROOT, 'chats', currentChatId, 'messages'), msgData);
             
-            // Preview text
             let preview = 'Mensaje';
-            if(isViewOnce) preview = '💣 Mensaje secreto';
+            if(isViewOnce) preview = '📷 Mensaje de 1 vista';
             else if(type === 'image') preview = '📷 Imagen';
             else if(type === 'audio') preview = '🎤 Audio';
             else preview = content;
 
             await updateDoc(doc(db, PUBLIC_ROOT, 'chats', currentChatId), { lastMessage: preview, lastMessageTime: serverTimestamp() });
             
-            // Reset UI
-            ui.msgInput.value = '';
-            checkInput();
-            if(isViewOnce) toggleViewOnce(); // Reset mode after send
+            ui.msgInput.value = ''; checkInput();
+            if(isViewOnce) toggleViewOnce();
         };
 
-        // --- VIEW ONCE HANDLING ---
-        window.openSecretMessage = async (msgId, content, type) => {
-            ui.secretModal.classList.remove('hidden');
-            ui.secretContent.innerHTML = '';
+        window.openViewOnce = async (msgId, content, type) => {
+            ui.viewOnceModal.classList.remove('hidden');
+            ui.viewOnceContent.innerHTML = '';
+            if(type === 'text') ui.viewOnceContent.innerHTML = `<p class="text-2xl font-bold text-white">${content}</p>`;
+            else if(type === 'image') ui.viewOnceContent.innerHTML = `<img src="${content}" class="max-w-full max-h-[60vh] rounded-lg">`;
+            else if(type === 'audio') ui.viewOnceContent.innerHTML = `<audio controls autoplay src="${content}" class="w-full"></audio>`;
             
-            if(type === 'text') ui.secretContent.innerHTML = `<p class="text-2xl font-bold text-white">${content}</p>`;
-            else if(type === 'image') ui.secretContent.innerHTML = `<img src="${content}" class="max-w-full max-h-[60vh] rounded-lg">`;
-            else if(type === 'audio') ui.secretContent.innerHTML = `<audio controls autoplay src="${content}" class="w-full"></audio>`;
-            
-            // Destroy on close or after timeout? Let's destroy immediately from DB so user can't reopen
-            // But wait until they close the modal? No, security first. Delete now.
-            // If we delete now, realtime listener might remove it from list behind modal. That's fine.
-            try {
-                await deleteDoc(doc(db, PUBLIC_ROOT, 'chats', currentChatId, 'messages', msgId));
-            } catch(e) { console.log("Already deleted?"); }
+            try { await deleteDoc(doc(db, PUBLIC_ROOT, 'chats', currentChatId, 'messages', msgId)); } catch(e) {}
         };
 
-        window.closeSecretModal = () => {
-            ui.secretModal.classList.add('hidden');
-            ui.secretContent.innerHTML = '';
+        window.closeViewOnceModal = () => {
+            ui.viewOnceModal.classList.add('hidden'); ui.viewOnceContent.innerHTML = '';
         };
 
         // --- WHITEBOARD ---
@@ -533,7 +508,6 @@
             const rect = ui.drawCanvas.getBoundingClientRect();
             const x = (e.clientX||e.touches[0].clientX) - rect.left;
             const y = (e.clientY||e.touches[0].clientY) - rect.top;
-            // Scale
             const sx = ui.drawCanvas.width / rect.width; const sy = ui.drawCanvas.height / rect.height;
             ctx.lineTo(x*sx, y*sy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x*sx, y*sy);
         }
@@ -542,27 +516,26 @@
         
         window.sendDrawing = () => {
             const b64 = ui.drawCanvas.toDataURL('image/jpeg', 0.6);
-            sendMessage(b64, 'image');
-            toggleDrawModal();
+            sendMessage(b64, 'image'); toggleDrawModal();
         };
 
-        // --- STANDARD APP LOGIC (Auth, Chats, etc) ---
+        // --- AUTH & LOGIC ---
         ui.authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('auth-username').value.trim().toLowerCase();
             const password = document.getElementById('auth-password').value;
-            if(!username || password.length < 6) { ui.errorMsg.textContent = "User min 1 char, Pass min 6"; ui.errorMsg.classList.remove('hidden'); return; }
-            const email = `${username}@nebula.spy`;
+            if(!username || password.length < 6) { ui.errorMsg.textContent = "Usuario/Pass inválidos"; ui.errorMsg.classList.remove('hidden'); return; }
+            const email = `${username}@nebula.chat`;
             ui.authBtn.disabled = true;
             try {
                 if(isRegistering) {
                     const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    const av = `https://api.dicebear.com/7.x/bottts/svg?seed=${username}`;
-                    await setDoc(doc(db, PUBLIC_ROOT, 'users', cred.user.uid), { uid: cred.user.uid, username, avatar: av, quickStatus: "En línea", createdAt: serverTimestamp() });
+                    const av = `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
+                    await setDoc(doc(db, PUBLIC_ROOT, 'users', cred.user.uid), { uid: cred.user.uid, username, avatar: av, quickStatus: "Hola!", createdAt: serverTimestamp() });
                 } else { await signInWithEmailAndPassword(auth, email, password); }
             } catch(e) { ui.errorMsg.textContent = e.message; ui.errorMsg.classList.remove('hidden'); ui.authBtn.disabled = false; }
         });
-        ui.switchBtn.onclick = (e) => { e.preventDefault(); isRegistering=!isRegistering; ui.switchBtn.textContent = isRegistering ? "YA TENGO CUENTA" : "CREAR CUENTA NUEVA"; ui.authBtn.textContent = isRegistering ? "Registrar Agente" : "Acceder"; };
+        ui.switchBtn.onclick = (e) => { e.preventDefault(); isRegistering=!isRegistering; ui.switchBtn.textContent = isRegistering ? "Ya tengo cuenta" : "Crear cuenta nueva"; ui.authBtn.textContent = isRegistering ? "Registrar" : "Entrar"; };
 
         onAuthStateChanged(auth, (user) => {
             if(user) {
@@ -579,7 +552,7 @@
         });
         window.logout = () => signOut(auth);
 
-        // Status & Groups (Simplified from previous version)
+        // Status & Groups
         window.toggleStatusModal = () => ui.statusModal.classList.toggle('hidden');
         window.setQuickPreset = (t) => ui.statusInput.value = t;
         window.saveMyStatus = async () => { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); };
@@ -587,8 +560,8 @@
         window.toggleGroupModal = () => ui.groupModal.classList.toggle('hidden');
         window.createGroup = async () => {
             const name = ui.groupNameInput.value; if(!name) return;
-            const ref = await addDoc(collection(db, PUBLIC_ROOT, 'chats'), { type: 'group', name, participants: [currentUser.uid], admin: currentUser.uid, lastMessage: 'Grupo secreto creado', lastMessageTime: serverTimestamp() });
-            toggleGroupModal(); openChat(ref.id, { username: name, avatar: `https://ui-avatars.com/api/?name=${name}&background=000&color=fff`, type: 'group' });
+            const ref = await addDoc(collection(db, PUBLIC_ROOT, 'chats'), { type: 'group', name, participants: [currentUser.uid], admin: currentUser.uid, lastMessage: 'Grupo creado', lastMessageTime: serverTimestamp() });
+            toggleGroupModal(); openChat(ref.id, { username: name, avatar: `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff`, type: 'group', participants: [currentUser.uid] });
         };
 
         function listenToChats() {
@@ -604,7 +577,6 @@
         async function renderChats(chats) {
             if(!ui.searchResultsArea.classList.contains('hidden')) return;
             ui.chatsList.innerHTML = ''; const uids = new Set([currentUser.uid]);
-            if(chats.length === 0) ui.chatsList.innerHTML = '<div class="text-center mt-10 text-slate-600 text-xs">Sin misiones activas</div>';
             
             for(const c of chats) {
                 let display = {};
@@ -615,7 +587,7 @@
                     if(userCache[other]) display = userCache[other];
                     else {
                         const s = await getDoc(doc(db, PUBLIC_ROOT, 'users', other));
-                        if(s.exists()) { display = s.data(); userCache[other] = display; } else display = { username: 'Agente X', avatar: '' };
+                        if(s.exists()) { display = s.data(); userCache[other] = display; } else display = { username: 'Usuario', avatar: '' };
                     }
                 }
                 const el = document.createElement('div');
@@ -623,7 +595,7 @@
                 el.className = `p-3 flex items-center gap-3 rounded-xl border-l-4 cursor-pointer transition-all ${isActive}`;
                 el.onclick = () => openChat(c.id, c.type === 'group' ? {...display, ...c} : display);
                 el.innerHTML = `
-                    <div class="relative"><img src="${display.avatar}" class="w-12 h-12 rounded-full bg-slate-950 object-cover"></div>
+                    <div class="relative"><img src="${display.avatar}" class="w-12 h-12 rounded-full bg-slate-800 object-cover"></div>
                     <div class="flex-1 min-w-0"><div class="flex justify-between"><h3 class="font-bold text-slate-200 truncate">${display.username}</h3></div><p class="text-xs text-slate-500 truncate">${c.lastMessage || '...'}</p></div>
                 `;
                 ui.chatsList.appendChild(el);
@@ -638,12 +610,12 @@
             
             users.forEach(u => {
                 const d = document.createElement('div');
-                d.className = 'flex flex-col items-center gap-2 min-w-[64px] cursor-pointer relative group';
+                d.className = 'flex flex-col items-center gap-2 min-w-[64px] cursor-pointer relative group pop-in';
                 d.onclick = () => u.isMe ? toggleStatusModal() : startChatWith(u);
                 d.innerHTML = `
-                    ${u.quickStatus ? `<div class="status-bubble text-[10px] text-emerald-400">${u.quickStatus}</div>` : ''}
+                    ${u.quickStatus ? `<div class="status-bubble text-emerald-400">${u.quickStatus}</div>` : ''}
                     <div class="relative p-[2px] rounded-full ${u.quickStatus ? 'bg-gradient-to-tr from-emerald-500 to-cyan-500' : 'bg-slate-800'}">
-                        <img src="${u.avatar}" class="w-14 h-14 rounded-full bg-slate-950 object-cover border-2 border-slate-950">
+                        <img src="${u.avatar}" class="w-14 h-14 rounded-full bg-slate-900 object-cover border-2 border-slate-900">
                     </div>
                     <span class="text-[10px] text-slate-400 truncate max-w-[60px]">${u.username}</span>
                 `;
@@ -654,8 +626,8 @@
         function openChat(id, data) {
             currentChatId = id; currentChatData = data;
             ui.headerName.textContent = data.username; ui.headerAvatar.src = data.avatar;
-            ui.headerStatusText.textContent = data.type === 'group' ? 'Grupo secreto' : (data.quickStatus || 'En línea');
-            
+            ui.headerStatusText.textContent = data.type === 'group' ? 'Grupo' : (data.quickStatus || 'En línea');
+            if(data.type === 'group') ui.btnAddMember.classList.remove('hidden'); else ui.btnAddMember.classList.add('hidden');
             if(window.innerWidth < 768) { ui.sidebar.style.transform = 'translateX(-100%)'; ui.chatView.style.transform = 'translateX(0)'; }
             
             if(unsubscribeMessages) unsubscribeMessages();
@@ -670,20 +642,18 @@
                         div.className = `flex w-full mb-1 ${isMe ? 'justify-end' : 'justify-start'} slide-up`;
                         
                         if(m.viewOnce) {
-                            // View Once Logic
                             if(isMe) {
                                 div.innerHTML = `<div class="bg-slate-800 border border-dashed border-slate-600 text-slate-400 px-3 py-2 rounded-xl text-xs flex items-center gap-2">
-                                    <i class="fa-solid fa-bomb"></i> Mensaje oculto enviado (1 vista)
+                                    <i class="fa-solid fa-eye-slash"></i> Enviado (1 vista)
                                 </div>`;
                             } else {
                                 const btn = document.createElement('button');
-                                btn.className = "secret-msg px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg hover:brightness-110 transition-all";
-                                btn.innerHTML = `<i class="fa-solid fa-fire"></i> VER MENSAJE SECRETO (1)`;
-                                btn.onclick = () => openSecretMessage(c.doc.id, m.content, m.type);
+                                btn.className = "view-once-msg";
+                                btn.innerHTML = `<i class="fa-solid fa-fire text-emerald-400"></i> Ver mensaje (1)`;
+                                btn.onclick = () => openViewOnce(c.doc.id, m.content, m.type);
                                 div.appendChild(btn);
                             }
                         } else {
-                            // Standard Message
                             let content = '';
                             if(m.type === 'text') content = `<span class="text-[15px]">${m.content}</span>`;
                             else if(m.type === 'image') content = `<img src="${m.content}" class="rounded-lg max-w-[200px] border border-slate-700">`;
@@ -695,18 +665,15 @@
                                     ${isMe ? '<div class="text-[9px] opacity-60 text-right mt-1"><i class="fa-solid fa-check"></i></div>' : ''}
                                 </div>`;
                         }
-                        if(!div.innerHTML && !m.viewOnce) return; // Safety
                         ui.messagesList.appendChild(div);
                         ui.messagesList.scrollTop = ui.messagesList.scrollHeight;
                     }
                 });
             });
+            setTimeout(() => ui.msgInput.focus(), 300);
         }
 
-        // Search & Start Chat helpers (abbreviated for length but functional)
-        ui.searchInput.oninput = (e) => { /* ... search logic ... */ }; // (Implied standard search logic from prev versions, omitted for brevity in this "complete" block as requested to focus on new features, but standard search works via console if needed. Re-adding critical search block below to be safe)
-        
-        // Re-adding Basic Search Logic for completeness
+        // Search & Start
         let searchTimer;
         ui.searchInput.addEventListener('input', (e) => {
             clearTimeout(searchTimer); const t = e.target.value.toLowerCase();
@@ -738,8 +705,18 @@
         window.closeChat = () => { currentChatId = null; if(window.innerWidth < 768) { ui.sidebar.style.transform = 'translateX(0)'; ui.chatView.style.transform = 'translateX(100%)'; } };
         window.toggleChatMenu = () => document.getElementById('chat-menu-dropdown').classList.toggle('hidden');
         window.toggleAddMemberModal = () => document.getElementById('add-member-modal').classList.toggle('hidden');
-        ui.avatarInput.onchange = async (e) => { /* Avatar upload logic standard */ };
-
+        ui.avatarInput.onchange = async (e) => { 
+            const file = e.target.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                const img = new Image(); img.src = ev.target.result;
+                img.onload = async () => {
+                    const c = document.createElement('canvas'); c.width=100; c.height=100;
+                    c.getContext('2d').drawImage(img,0,0,100,100);
+                    await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { avatar: c.toDataURL('image/jpeg',0.8) });
+                }
+            }; reader.readAsDataURL(file);
+        };
     </script>
 </body>
 </html>
