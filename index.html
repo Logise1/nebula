@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v10 Final</title>
+    <title>Nebula Chat - School Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -43,13 +43,13 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Animations */
-        .fade-in { animation: fadeIn 0.2s ease-out; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
         .slide-up { animation: slideUp 0.3s ease-out; }
-        .pop-in { animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .pulse-recording { animation: pulseRed 1.5s infinite; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
 
@@ -66,23 +66,43 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        /* View Once Message Style */
-        .view-once-msg {
-            background: #334155;
-            border: 1px dashed #94a3b8;
-            color: #f1f5f9;
-            cursor: pointer;
+        /* Custom Audio Player Styles */
+        .audio-player-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
+            gap: 12px;
+            min-width: 200px;
+            padding: 4px 0;
+        }
+        .play-btn {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             transition: background 0.2s;
         }
-        .view-once-msg:hover { background: #475569; }
-
-        /* STATUS BUBBLE */
+        .play-btn:hover { background: rgba(255,255,255,0.3); }
+        .audio-wave {
+            flex: 1;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0.7;
+        }
+        .wave-bar {
+            width: 3px;
+            background: currentColor;
+            border-radius: 2px;
+            animation: wave 1s infinite paused;
+        }
+        .wave-bar.playing { animation-play-state: running; }
+        
+        /* Status Bubble */
         .status-bubble {
             background: #1e293b; 
             border: 1px solid #475569;
@@ -90,7 +110,7 @@
             border-radius: 12px;
             white-space: nowrap;
             position: absolute;
-            top: -30px; /* Positioned relative to avatar container */
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -125,6 +145,48 @@
 </head>
 <body>
 
+    <!-- ONBOARDING TUTORIAL (First Time Only) -->
+    <div id="onboarding-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-6 fade-in">
+        <div class="w-full max-w-md bg-slate-900 border border-emerald-500/50 rounded-3xl p-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 to-cyan-500"></div>
+            
+            <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-900/50">
+                <i class="fa-solid fa-graduation-cap text-4xl text-emerald-400"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold text-white mb-2">¡Bienvenido a Clase! 🎓</h2>
+            <p class="text-slate-400 mb-8 text-sm">Aquí tienes las herramientas para sobrevivir al curso:</p>
+            
+            <div class="space-y-4 text-left mb-8">
+                <div class="flex items-center gap-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-emerald-900/50 flex items-center justify-center text-emerald-400"><i class="fa-solid fa-microphone"></i></div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">Audio Rápido</h4>
+                        <p class="text-xs text-slate-400">Mantén pulsado el micro para grabar notas de voz.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-purple-900/50 flex items-center justify-center text-purple-400"><i class="fa-solid fa-paintbrush"></i></div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">Pizarra</h4>
+                        <p class="text-xs text-slate-400">Dibuja esquemas o garabatos y envíalos.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 p-3 bg-slate-800/50 rounded-xl border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-red-900/50 flex items-center justify-center text-red-400"><i class="fa-solid fa-1"></i></div>
+                    <div>
+                        <h4 class="font-bold text-white text-sm">Modo Secreto</h4>
+                        <p class="text-xs text-slate-400">Mensajes que se borran tras verlos una vez.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="closeOnboarding()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all">
+                ¡Entendido, a clase!
+            </button>
+        </div>
+    </div>
+
     <!-- AUTH SCREEN -->
     <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900">
         <div class="w-full max-w-md bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl slide-up">
@@ -133,7 +195,7 @@
                     <i class="fa-solid fa-comments text-4xl text-emerald-500"></i>
                 </div>
                 <h1 class="text-3xl font-bold text-white mb-2">Nebula Chat</h1>
-                <p class="text-slate-400 text-sm">Conecta con amigos</p>
+                <p class="text-slate-400 text-sm">Conecta con tu clase</p>
             </div>
             <form id="auth-form" class="space-y-4">
                 <input type="text" id="auth-username" required class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-white focus:border-emerald-500 outline-none placeholder-slate-500" placeholder="Nombre de usuario">
@@ -239,9 +301,8 @@
                     <input type="text" id="user-search" placeholder="Buscar..." class="w-full bg-slate-800 text-sm text-white rounded-xl px-4 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
                 </div>
 
-                <!-- QUICK STATUS AREA (FIXED PADDING) -->
+                <!-- QUICK STATUS AREA -->
                 <div class="border-b border-slate-800/50 bg-slate-900/50 relative z-10">
-                    <!-- Scroll container with internal padding -->
                     <div class="flex gap-5 overflow-x-auto hide-scroll items-center min-h-[85px] px-6 pt-10 pb-2" id="quick-status-list"></div>
                 </div>
 
@@ -336,6 +397,7 @@
         const db = getFirestore(app);
         const APP_ID = "nebula_chat_v10"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
+        const GLOBAL_GROUP_ID = "global_class_group_v11"; // Unique ID for the global group
 
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
@@ -352,7 +414,8 @@
             emojiPicker: document.getElementById('emoji-picker'), emojiContainer: document.getElementById('emoji-container'),
             drawModal: document.getElementById('draw-modal'), drawCanvas: document.getElementById('draw-canvas'), drawViewOnceHint: document.getElementById('draw-view-once-hint'),
             btnViewOnce: document.getElementById('btn-view-once'), viewOnceModal: document.getElementById('view-once-modal'), viewOnceContent: document.getElementById('view-once-content'),
-            actionBtn: document.getElementById('action-btn'), actionIcon: document.getElementById('action-icon'), recordingOverlay: document.getElementById('recording-overlay'), recordTimer: document.getElementById('record-timer')
+            actionBtn: document.getElementById('action-btn'), actionIcon: document.getElementById('action-icon'), recordingOverlay: document.getElementById('recording-overlay'), recordTimer: document.getElementById('record-timer'),
+            onboardingModal: document.getElementById('onboarding-modal')
         };
 
         let currentUser = null;
@@ -371,6 +434,12 @@
         let isRecording = false;
         let recordStartTime = 0;
         let recordInterval = null;
+
+        // --- ONBOARDING ---
+        window.closeOnboarding = () => {
+            ui.onboardingModal.classList.add('hidden');
+            localStorage.setItem('nebula_v11_intro_seen', 'true');
+        };
 
         // --- EMOJIS ---
         const emojis = ["😀","😂","😍","😎","😭","😡","👍","👎","👋","🙏","🔥","✨","💩","👻","💀","👽","🤖","🎃","🧠","👀","💪","🦶","💋","💘","💔","💣","💥","💯","💢","💬","💤"];
@@ -399,7 +468,7 @@
             ui.drawViewOnceHint.textContent = isViewOnce ? "⚠️ Imagen de 1 vista" : "";
         };
 
-        // --- AUDIO ---
+        // --- AUDIO RECORDING ---
         ui.msgInput.addEventListener('input', checkInput);
         function checkInput() {
             if(ui.msgInput.value.trim().length > 0) {
@@ -429,7 +498,7 @@
                     const reader = new FileReader();
                     reader.onloadend = () => {
                         const base64Audio = reader.result;
-                        if(base64Audio.length < 900000) { sendMessage(base64Audio, 'audio'); } 
+                        if(base64Audio.length < 1200000) { sendMessage(base64Audio, 'audio'); } 
                         else { alert("Audio muy largo."); }
                     };
                     reader.readAsDataURL(audioBlob);
@@ -452,6 +521,41 @@
             mediaRecorder.stop(); isRecording = false;
             ui.recordingOverlay.classList.add('hidden');
             clearInterval(recordInterval); ui.recordTimer.textContent = "0:00";
+        };
+
+        // --- CUSTOM AUDIO PLAYER LOGIC ---
+        window.playAudio = (btn, src) => {
+            const container = btn.parentElement;
+            const waveBars = container.querySelectorAll('.wave-bar');
+            
+            // Stop currently playing if any (simplified)
+            const existingAudio = window.currentPlayingAudio;
+            if(existingAudio && existingAudio.src !== src) {
+                existingAudio.pause();
+                // Reset UI of previous
+            }
+
+            if(btn.classList.contains('playing')) {
+                // Pause
+                window.currentPlayingAudio.pause();
+                btn.innerHTML = '<i class="fa-solid fa-play text-white"></i>';
+                btn.classList.remove('playing');
+                waveBars.forEach(b => b.classList.remove('playing'));
+            } else {
+                // Play
+                const audio = new Audio(src);
+                window.currentPlayingAudio = audio;
+                audio.play();
+                btn.innerHTML = '<i class="fa-solid fa-pause text-white"></i>';
+                btn.classList.add('playing');
+                waveBars.forEach(b => b.classList.add('playing'));
+                
+                audio.onended = () => {
+                    btn.innerHTML = '<i class="fa-solid fa-play text-white"></i>';
+                    btn.classList.remove('playing');
+                    waveBars.forEach(b => b.classList.remove('playing'));
+                };
+            }
         };
 
         // --- MESSAGING ---
@@ -537,15 +641,43 @@
         });
         ui.switchBtn.onclick = (e) => { e.preventDefault(); isRegistering=!isRegistering; ui.switchBtn.textContent = isRegistering ? "Ya tengo cuenta" : "Crear cuenta nueva"; ui.authBtn.textContent = isRegistering ? "Registrar" : "Entrar"; };
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if(user) {
                 currentUser = user; ui.authScreen.classList.add('hidden'); ui.appUi.classList.remove('hidden');
+                
+                // Check Onboarding
+                if (!localStorage.getItem('nebula_v11_intro_seen')) {
+                    ui.onboardingModal.classList.remove('hidden');
+                }
+
+                // --- JOIN GLOBAL GROUP AUTOMATICALLY ---
+                try {
+                    const globalRef = doc(db, PUBLIC_ROOT, 'chats', GLOBAL_GROUP_ID);
+                    const globalSnap = await getDoc(globalRef);
+                    if (!globalSnap.exists()) {
+                        // Create if not exists
+                        await setDoc(globalRef, {
+                            type: 'group',
+                            name: 'Clase General 🏫',
+                            participants: [user.uid],
+                            groupImage: 'https://ui-avatars.com/api/?name=CG&background=059669&color=fff',
+                            lastMessage: '¡Bienvenidos a clase!',
+                            lastMessageTime: serverTimestamp()
+                        });
+                    } else {
+                        // Add user to participants if not already there
+                        if(!globalSnap.data().participants.includes(user.uid)) {
+                            await updateDoc(globalRef, { participants: arrayUnion(user.uid) });
+                        }
+                    }
+                } catch(e) { console.error("Global group error", e); }
+                // ---------------------------------------
+
                 if(unsubscribeMyProfile) unsubscribeMyProfile();
                 unsubscribeMyProfile = onSnapshot(doc(db, PUBLIC_ROOT, 'users', user.uid), s => {
                     if(s.exists()) {
                         const d = s.data(); ui.myUsername.textContent = d.username; ui.myAvatar.src = d.avatar;
                         myCurrentStatus = d.quickStatus; 
-                        // FORCE RENDER TO SHOW ME
                         renderQuickStatusBar([]);
                     }
                 });
@@ -670,7 +802,19 @@
                             let content = '';
                             if(m.type === 'text') content = `<span class="text-[15px]">${m.content}</span>`;
                             else if(m.type === 'image') content = `<img src="${m.content}" class="rounded-lg max-w-[200px] border border-slate-700">`;
-                            else if(m.type === 'audio') content = `<audio controls src="${m.content}" class="w-48 h-8"></audio>`;
+                            else if(m.type === 'audio') {
+                                // CUSTOM AUDIO PLAYER
+                                content = `
+                                    <div class="audio-player-container">
+                                        <button class="play-btn" onclick="playAudio(this, '${m.content}')">
+                                            <i class="fa-solid fa-play text-white"></i>
+                                        </button>
+                                        <div class="audio-wave text-white">
+                                            ${[...Array(15)].map(() => `<div class="wave-bar" style="height: ${Math.random() * 100}%"></div>`).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }
                             
                             div.innerHTML = `
                                 <div class="max-w-[75%] px-4 py-2 shadow-sm relative break-words ${isMe ? 'msg-bubble-me text-white' : 'msg-bubble-other text-slate-200'}">
