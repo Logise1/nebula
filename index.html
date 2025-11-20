@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - v16 Stable</title>
+    <title>Nebula Chat - v17 Ultimate</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -110,7 +110,7 @@
 </head>
 <body>
 
-    <!-- ONBOARDING -->
+    <!-- ONBOARDING (TUTORIAL) -->
     <div id="onboarding-modal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm hidden flex items-center justify-center p-6 fade-in">
         <div class="w-full max-w-md bg-slate-900 border border-emerald-500/50 rounded-3xl p-8 text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500"></div>
@@ -328,6 +328,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // --- CRITICAL CONSTANTS ---
         const APP_ID = "nebula_chat_v10"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
@@ -359,7 +361,7 @@
         let isViewOnce = false, mediaRecorder = null, audioChunks = [], isRecording = false, recordStartTime = 0, recordInterval = null;
 
         // --- GLOBAL HELPERS ---
-        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v11_intro_seen', 'true'); };
+        window.closeOnboarding = () => { if(ui.onboardingModal) ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v17_intro_seen', 'true'); };
         window.toggleStatusModal = () => { if(ui.statusModal) ui.statusModal.classList.toggle('hidden'); };
         window.setQuickPreset = (t) => { if(ui.statusInput) ui.statusInput.value = t; };
         window.saveMyStatus = async () => { if(ui.statusInput) { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); } };
@@ -587,6 +589,12 @@
         onAuthStateChanged(auth, async (user) => {
             if(user) {
                 currentUser = user; ui.authScreen.classList.add('hidden'); ui.appUi.classList.remove('hidden');
+                
+                // FORCE TUTORIAL SHOW
+                if(!localStorage.getItem('nebula_v17_intro_seen')) {
+                    if(ui.onboardingModal) ui.onboardingModal.classList.remove('hidden');
+                }
+                
                 try { const gRef = doc(db, PUBLIC_ROOT, 'chats', GLOBAL_GROUP_ID); const gSnap = await getDoc(gRef); if(!gSnap.exists()) await setDoc(gRef, { type: 'group', name: 'Clase General 🏫', participants: [user.uid], groupImage: 'https://ui-avatars.com/api/?name=CG&background=059669&color=fff', lastMessage: 'Bienvenidos', lastMessageTime: serverTimestamp() }); else if(!gSnap.data().participants.includes(user.uid)) await updateDoc(gRef, { participants: arrayUnion(user.uid) }); } catch(e){}
                 if(unsubscribeMyProfile) unsubscribeMyProfile(); unsubscribeMyProfile = onSnapshot(doc(db, PUBLIC_ROOT, 'users', user.uid), s => { if(s.exists()) { const d = s.data(); ui.myUsername.textContent = d.username; ui.myAvatar.src = d.avatar; myCurrentStatus = d.quickStatus; renderQuickStatusBar([]); } });
                 listenToChats();
