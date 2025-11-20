@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Nebula Chat - Fun Edition</title>
+    <title>Nebula Chat - Cloud Edition</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -13,7 +13,7 @@
 
     <style>
         body {
-            font-family: 'Outfit', sans-serif; /* Fuente más moderna y juvenil */
+            font-family: 'Outfit', sans-serif;
             background-color: #0f172a; 
             color: #e2e8f0;
             overflow: hidden;
@@ -54,16 +54,14 @@
         .fade-in { animation: fadeIn 0.2s ease-out; }
         .pop-in { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .pulse-recording { animation: pulseRed 1.5s infinite; }
-        .heart-pop { animation: heartPop 0.4s ease-out forwards; }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        @keyframes heartPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
 
-        /* Message Bubbles - Más redondeados y coloridos */
+        /* Message Bubbles */
         .msg-bubble-me {
-            background: linear-gradient(135deg, #34d399 0%, #059669 100%); /* Emerald vibrante */
+            background: linear-gradient(135deg, #34d399 0%, #059669 100%);
             border-radius: 18px 18px 4px 18px;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
         }
@@ -83,7 +81,10 @@
             display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;
         }
         .play-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
-        
+        .wave-bar { width: 3px; background: rgba(255,255,255,0.8); border-radius: 2px; animation: wave 1s infinite paused; }
+        .wave-bar.playing { animation-play-state: running; }
+        @keyframes wave { 0%, 100% { height: 10%; } 50% { height: 100%; } }
+
         /* Status Bubble */
         .status-bubble {
             background: #1e293b; border: 1px solid #475569; padding: 4px 12px; border-radius: 20px;
@@ -95,13 +96,29 @@
             width: 8px; height: 8px; background: #1e293b; border-right: 1px solid #475569; border-bottom: 1px solid #475569;
         }
 
+        /* Emoji Picker */
+        .emoji-picker-panel {
+            display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; padding: 8px;
+            background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+        }
+        .emoji-btn:hover { background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; }
+
+        /* View Once Message */
+        .view-once-msg {
+            background: #334155; border: 1px dashed #94a3b8; color: #f1f5f9; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px;
+            font-size: 0.85rem; transition: background 0.2s;
+        }
+        .view-once-msg:hover { background: #475569; }
+
         canvas { touch-action: none; }
         
-        /* Double Tap Heart */
         .msg-heart {
             position: absolute; top: -10px; right: -10px; font-size: 1.5rem; 
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); pointer-events: none;
+            animation: heartPop 0.4s ease-out forwards;
         }
+        @keyframes heartPop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -116,7 +133,7 @@
             <h2 class="text-2xl font-bold text-white mb-2">¡Nebula Chat! 🚀</h2>
             <p class="text-slate-400 mb-8 text-sm">Todo lo que necesitas para sobrevivir al grupo:</p>
             <div class="grid grid-cols-2 gap-3 mb-8 text-left">
-                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-image text-cyan-400 mb-1"></i><h4 class="font-bold text-white text-sm">Fotos</h4><p class="text-[10px] text-slate-400">Sube memes o tareas.</p></div>
+                <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-cloud text-cyan-400 mb-1"></i><h4 class="font-bold text-white text-sm">Cloud Photos</h4><p class="text-[10px] text-slate-400">Fotos HD en la nube.</p></div>
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-microphone text-emerald-400 mb-1"></i><h4 class="font-bold text-white text-sm">Audios</h4><p class="text-[10px] text-slate-400">Pulsa el micro.</p></div>
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-paintbrush text-pink-400 mb-1"></i><h4 class="font-bold text-white text-sm">Pizarra</h4><p class="text-[10px] text-slate-400">Dibuja lo que sea.</p></div>
                 <div class="p-3 bg-slate-800/50 rounded-xl border border-slate-700"><i class="fa-solid fa-fire text-orange-400 mb-1"></i><h4 class="font-bold text-white text-sm">Secreto</h4><p class="text-[10px] text-slate-400">Mensajes de 1 uso.</p></div>
@@ -146,7 +163,7 @@
 
     <!-- MODALS -->
     <div id="status-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 fade-in">
-        <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 relative">
             <button onclick="toggleStatusModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="text-lg font-bold text-white mb-4">Tu Estado</h3>
             <div class="flex gap-2 mb-4 overflow-x-auto pb-2 hide-scroll">
@@ -190,6 +207,24 @@
         </div>
     </div>
 
+    <!-- MODALS: GROUP & ADD MEMBER -->
+    <div id="group-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6">
+            <button onclick="toggleGroupModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-bold text-white mb-4">Nuevo Grupo</h3>
+            <input type="text" id="group-name-input" placeholder="Nombre del grupo..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
+            <button onclick="createGroup()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl">Crear</button>
+        </div>
+    </div>
+    <div id="add-member-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl p-6 flex flex-col max-h-[80vh]">
+            <button onclick="toggleAddMemberModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-bold text-white mb-4">Añadir Miembro</h3>
+            <input type="text" id="add-member-search" placeholder="Buscar usuario..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none mb-4">
+            <div id="add-member-results" class="flex-1 overflow-y-auto space-y-2 min-h-[150px]"></div>
+        </div>
+    </div>
+
     <!-- APP UI -->
     <div id="app-ui" class="app-viewport hidden bg-slate-950">
         <div class="animated-bg"></div> <!-- Background -->
@@ -210,8 +245,15 @@
                         </div>
                         <h1 id="my-username" class="font-bold text-lg text-white truncate max-w-[120px]">...</h1>
                     </div>
-                    <button onclick="logout()" class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-all"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    <div class="flex gap-3">
+                        <button onclick="toggleGroupModal()" class="text-slate-400 hover:text-emerald-400" title="Crear Grupo"><i class="fa-solid fa-users text-xl"></i></button>
+                        <button onclick="logout()" class="text-slate-400 hover:text-red-400" title="Salir"><i class="fa-solid fa-right-from-bracket text-xl"></i></button>
+                    </div>
                 </header>
+
+                <div class="px-4 py-3 bg-slate-900">
+                    <input type="text" id="user-search" placeholder="Buscar..." class="w-full bg-slate-800 text-sm text-white rounded-xl px-4 py-2 focus:ring-1 focus:ring-emerald-500 outline-none">
+                </div>
 
                 <!-- QUICK STATUS (Fixed Scroll) -->
                 <div class="relative z-10 pt-4 pb-2 bg-gradient-to-b from-slate-900 to-transparent">
@@ -235,6 +277,13 @@
                             <span id="header-status-text" class="text-xs text-emerald-400 font-medium">En línea</span>
                         </div>
                     </div>
+                    <div class="relative group-menu">
+                         <button onclick="toggleChatMenu()" class="text-slate-400 hover:text-white px-2"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                         <div id="chat-menu-dropdown" class="hidden absolute right-0 top-10 w-40 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                             <button onclick="toggleAddMemberModal()" id="btn-add-member" class="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-slate-700 hidden">Añadir miembro</button>
+                             <button onclick="closeChat()" class="w-full text-left px-4 py-3 text-sm text-slate-300 hover:bg-slate-700">Cerrar</button>
+                         </div>
+                    </div>
                 </header>
 
                 <!-- Messages -->
@@ -246,6 +295,11 @@
                     <span class="font-mono font-bold text-sm">GRABANDO <span id="record-timer" class="ml-1 opacity-80">0:00</span></span>
                 </div>
 
+                <!-- EMOJI PICKER -->
+                <div id="emoji-picker" class="hidden absolute bottom-20 left-2 right-2 md:left-4 md:w-80 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll">
+                    <div class="emoji-picker-panel" id="emoji-container"></div>
+                </div>
+
                 <!-- Input Area -->
                 <footer class="p-3 glass flex-shrink-0 z-20 relative">
                     <div class="flex items-end gap-2 max-w-4xl mx-auto w-full">
@@ -253,11 +307,12 @@
                         <div class="flex gap-1 bg-slate-800/50 p-1 rounded-2xl border border-slate-700/50">
                             <button type="button" onclick="document.getElementById('image-input').click()" class="w-9 h-9 text-cyan-400 hover:bg-slate-700 rounded-xl transition-colors" title="Foto"><i class="fa-solid fa-image"></i></button>
                             <button type="button" onclick="toggleDrawModal()" class="w-9 h-9 text-pink-400 hover:bg-slate-700 rounded-xl transition-colors" title="Dibujar"><i class="fa-solid fa-paintbrush"></i></button>
-                            <button type="button" onclick="toggleViewOnce()" id="btn-view-once" class="w-9 h-9 text-slate-400 hover:bg-slate-700 rounded-xl transition-all" title="1 Vista"><i class="fa-solid fa-fire"></i></button>
+                            <button type="button" onclick="toggleViewOnce()" id="btn-view-once" class="w-9 h-9 text-slate-400 hover:bg-slate-700 rounded-xl transition-all" title="Ver una vez"><i class="fa-solid fa-fire"></i></button>
                         </div>
                         
                         <!-- Text Input -->
                         <div class="flex-1 bg-slate-800/80 rounded-2xl flex items-center border border-slate-700/50 focus-within:border-emerald-500/50 transition-all min-h-[46px] shadow-sm">
+                            <button type="button" onclick="toggleEmojiPicker()" class="pl-3 pr-2 text-slate-400 hover:text-yellow-400 transition-colors"><i class="fa-regular fa-face-smile text-lg"></i></button>
                             <input type="text" id="msg-input" autocomplete="off" placeholder="Escribe algo..." class="w-full bg-transparent border-none focus:outline-none text-white placeholder-slate-500 py-2.5 px-4 text-[15px]">
                         </div>
 
@@ -294,6 +349,7 @@
         const APP_ID = "nebula_chat_v10"; 
         const PUBLIC_ROOT = `artifacts/${APP_ID}/public/data`; 
         const GLOBAL_GROUP_ID = "global_class_group_v11"; 
+        const YYF_URL = 'https://yyf.mubilop.com';
 
         const ui = {
             authScreen: document.getElementById('auth-screen'), appUi: document.getElementById('app-ui'),
@@ -318,14 +374,28 @@
         // --- ONBOARDING ---
         window.closeOnboarding = () => { ui.onboardingModal.classList.add('hidden'); localStorage.setItem('nebula_v11_intro_seen', 'true'); };
 
-        // --- IMAGE RESIZE & SEND ---
+        // --- UPLOAD TO YYF ---
+        async function uploadToYYF(blob, filename = 'file.jpg') {
+             const formData = new FormData();
+             formData.append('file', blob, filename);
+             try {
+                 const res = await fetch(`${YYF_URL}/api/upload`, { method: 'POST', body: formData });
+                 if(!res.ok) throw new Error('Upload failed');
+                 const data = await res.json();
+                 return YYF_URL + data.fileUrl;
+             } catch(e) { console.error(e); throw e; }
+        }
+
+        // --- IMAGE RESIZE & SEND (MODIFIED) ---
         ui.imageInput.addEventListener('change', async (e) => {
             const file = e.target.files[0]; if(!file) return;
-            // Visual feedback?
-            ui.msgInput.placeholder = "Procesando imagen...";
+            ui.msgInput.placeholder = "Subiendo a la nube... ☁️";
             
-            const resizedBase64 = await resizeImage(file, 600, 600);
-            sendMessage(resizedBase64, 'image');
+            try {
+                const blob = await resizeImage(file, 600, 600);
+                const url = await uploadToYYF(blob, 'image.jpg');
+                sendMessage(url, 'image');
+            } catch(e) { alert("Error al subir imagen"); }
             
             ui.imageInput.value = ''; ui.msgInput.placeholder = "Escribe algo...";
         });
@@ -344,7 +414,7 @@
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.8);
                     };
                 };
                 reader.readAsDataURL(file);
@@ -378,9 +448,11 @@
                 mediaRecorder = new MediaRecorder(stream); audioChunks = [];
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
                 mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    // Audio upload could also be cloud based but keeping it simple for now as per prompt "photo hosting"
                     const reader = new FileReader();
                     reader.onloadend = () => { if(reader.result.length < 1200000) sendMessage(reader.result, 'audio'); else alert("Audio muy largo."); };
-                    reader.readAsDataURL(new Blob(audioChunks, { type: 'audio/webm' }));
+                    reader.readAsDataURL(audioBlob);
                     stream.getTracks().forEach(track => track.stop());
                 };
                 mediaRecorder.start(); isRecording = true; ui.recordingOverlay.classList.remove('hidden');
@@ -394,7 +466,7 @@
 
         window.playAudio = (btn, src) => {
             const bars = btn.parentElement.querySelectorAll('.wave-bar');
-            if(window.currAudio && window.currAudio.src !== src) { window.currAudio.pause(); } // Reset others logic omitted for brevity
+            if(window.currAudio && window.currAudio.src !== src) { window.currAudio.pause(); } 
             if(btn.classList.contains('playing')) { window.currAudio.pause(); btn.innerHTML='<i class="fa-solid fa-play text-white"></i>'; btn.classList.remove('playing'); bars.forEach(b=>b.classList.remove('playing')); }
             else {
                 const a = new Audio(src); window.currAudio = a; a.play();
@@ -415,7 +487,21 @@
             ui.msgInput.value = ''; checkInput(); if(isViewOnce) toggleViewOnce();
         };
 
-        // --- WHITEBOARD ---
+        window.openViewOnce = async (msgId, content, type) => {
+            ui.viewOnceModal.classList.remove('hidden');
+            ui.viewOnceContent.innerHTML = '';
+            if(type === 'text') ui.viewOnceContent.innerHTML = `<p class="text-2xl font-bold text-white">${content}</p>`;
+            else if(type === 'image') ui.viewOnceContent.innerHTML = `<img src="${content}" class="max-w-full max-h-[60vh] rounded-lg">`;
+            else if(type === 'audio') ui.viewOnceContent.innerHTML = `<audio controls autoplay src="${content}" class="w-full"></audio>`;
+            
+            try { await deleteDoc(doc(db, PUBLIC_ROOT, 'chats', currentChatId, 'messages', msgId)); } catch(e) {}
+        };
+
+        window.closeViewOnceModal = () => {
+            ui.viewOnceModal.classList.add('hidden'); ui.viewOnceContent.innerHTML = '';
+        };
+
+        // --- WHITEBOARD (MODIFIED) ---
         let ctx = ui.drawCanvas.getContext('2d'); let painting = false;
         window.toggleDrawModal = () => { ui.drawModal.classList.toggle('hidden'); if(!ui.drawModal.classList.contains('hidden')){ ctx.fillStyle="white"; ctx.fillRect(0,0,350,350); ctx.lineWidth=3; ctx.strokeStyle="black"; } };
         window.setBrushColor = (c) => ctx.strokeStyle = c;
@@ -424,11 +510,23 @@
             if(!painting) return;
             const r = ui.drawCanvas.getBoundingClientRect();
             const x = (e.clientX||e.touches[0].clientX) - r.left; const y = (e.clientY||e.touches[0].clientY) - r.top;
-            ctx.lineTo(x*(350/r.width), y*(350/r.height)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x*(350/r.width), y*(350/r.height));
+            const sx = ui.drawCanvas.width / rect.width; const sy = ui.drawCanvas.height / rect.height;
+            ctx.lineTo(x*sx, y*sy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x*sx, y*sy);
         }
         ui.drawCanvas.addEventListener("mousedown", ()=>{painting=true; draw(event)}); ui.drawCanvas.addEventListener("mouseup", ()=>{painting=false; ctx.beginPath()}); ui.drawCanvas.addEventListener("mousemove", draw);
         ui.drawCanvas.addEventListener("touchstart", ()=>{painting=true; draw(event)}); ui.drawCanvas.addEventListener("touchend", ()=>{painting=false; ctx.beginPath()}); ui.drawCanvas.addEventListener("touchmove", e=>{e.preventDefault(); draw(e)});
-        window.sendDrawing = () => { sendMessage(ui.drawCanvas.toDataURL('image/jpeg', 0.6), 'image'); toggleDrawModal(); };
+        
+        window.sendDrawing = () => {
+            ui.msgInput.placeholder = "Subiendo dibujo... ☁️";
+            ui.drawCanvas.toBlob(async (blob) => {
+                try {
+                    const url = await uploadToYYF(blob, 'drawing.jpg');
+                    sendMessage(url, 'image');
+                } catch(e) { alert("Error subiendo dibujo"); }
+                ui.msgInput.placeholder = "Escribe algo...";
+                toggleDrawModal();
+            }, 'image/jpeg', 0.6);
+        };
 
         // --- AUTH & INIT ---
         ui.authForm.addEventListener('submit', async (e) => {
@@ -469,7 +567,18 @@
         });
         window.logout = () => signOut(auth);
 
-        // --- CHATS & STATUS ---
+        // Status & Groups
+        window.toggleStatusModal = () => ui.statusModal.classList.toggle('hidden');
+        window.setQuickPreset = (t) => ui.statusInput.value = t;
+        window.saveMyStatus = async () => { await updateDoc(doc(db, PUBLIC_ROOT, 'users', currentUser.uid), { quickStatus: ui.statusInput.value }); toggleStatusModal(); };
+        
+        window.toggleGroupModal = () => ui.groupModal.classList.toggle('hidden');
+        window.createGroup = async () => {
+            const name = ui.groupNameInput.value; if(!name) return;
+            const ref = await addDoc(collection(db, PUBLIC_ROOT, 'chats'), { type: 'group', name, participants: [currentUser.uid], admin: currentUser.uid, lastMessage: 'Grupo creado', lastMessageTime: serverTimestamp() });
+            toggleGroupModal(); openChat(ref.id, { username: name, avatar: `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff`, type: 'group', participants: [currentUser.uid] });
+        };
+
         function listenToChats() {
             if(unsubscribeChats) unsubscribeChats();
             const q = query(collection(db, PUBLIC_ROOT, 'chats'), where('participants', 'array-contains', currentUser.uid), orderBy('lastMessageTime', 'desc'));
