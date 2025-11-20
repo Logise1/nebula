@@ -1,8 +1,8 @@
-const CACHE_NAME = 'nebula-chat-v1';
+const CACHE_NAME = 'nebula-chat-v3';
 const ASSETS_TO_CACHE = [
   './index.html',
   './manifest.json',
-  // Añade aquí tus iconos si los descargas localmente
+  './512.png'
 ];
 
 // Instalación: Cachear archivos básicos
